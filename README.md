@@ -49,5 +49,5 @@ Command recipes:
 npm run build --watch
 npm run lint --watch
 # CLI, only after a build
-node ./dist/cli.js -i scratch/a.tex -o scratch/b.tex
+node ./dist/cli.js scratch/a.tex > scratch/b.tex
 ```

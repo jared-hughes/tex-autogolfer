@@ -2,9 +2,13 @@ import type { Child, Def, Group, Let, Program } from "../types/AST";
 import type { TokenType } from "../types/TokenValue";
 import { Lexer } from "./Lexer";
 
-export function parse(tex: string): Program {
+export interface ParseOpts {
+  preserveNewlines: boolean;
+}
+
+export function parse(tex: string, opts: ParseOpts): Program {
   tex = tex.trimEnd();
-  const parser = new Parser(tex);
+  const parser = new Parser(tex, opts);
   return parser.parseProgram();
 }
 

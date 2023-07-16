@@ -2,6 +2,7 @@ import * as moo from "moo";
 import { DiagnosticsState } from "../types/diagnostics";
 import type { Pos } from "../types/AST";
 import type { TokenValue } from "../types/TokenValue";
+import type { ParseOpts } from "./Parser";
 
 const rules = {
   comment: { match: /%[^\n]*\n?/, lineBreaks: true },
@@ -13,7 +14,8 @@ const rules = {
   newline: { match: /\n{2,}/, lineBreaks: true },
   forced_output_space: /␣/,
   forced_code_space: /⫽/,
-  space: { match: /[ \n]+/, lineBreaks: true },
+  solo_newline: { match: /\n/, lineBreaks: true },
+  space: / +/,
   other: { match: /[^]/, lineBreaks: true },
 };
 
@@ -33,7 +35,10 @@ export class Lexer extends DiagnosticsState {
   private prevToken?: RawToken;
   private readonly lexer;
 
-  constructor(input: string) {
+  constructor(
+    input: string,
+    public opts: ParseOpts
+  ) {
     super(input);
     this.lexer = moo.compile(rules);
     this.lexer.reset(input);
@@ -58,7 +63,7 @@ export class Lexer extends DiagnosticsState {
           to: prev ? prev.offset + prev.text.length : 0,
           text: "",
         };
-      const value = tokenValue(t);
+      const value = tokenValue(t, this.opts);
       if (value !== undefined)
         return {
           ...value,
@@ -112,11 +117,13 @@ export class Lexer extends DiagnosticsState {
   }
 }
 
-function tokenValue(t: RawToken): TokenValue | undefined {
+function tokenValue(t: RawToken, opts: ParseOpts): TokenValue | undefined {
   switch (t.type) {
     case "comment":
     case "space":
       return undefined;
+    case "solo_newline":
+      return opts.preserveNewlines ? { type: "Other", value: "\n" } : undefined;
     case "word_control":
     case "symb_control":
     case "active":
