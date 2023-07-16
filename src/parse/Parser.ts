@@ -1,5 +1,6 @@
-import type { Child, Group, Program } from "../types/AST";
-import { Lexer, pos } from "./Lexer";
+import type { Child, Def, Group, Let, Program } from "../types/AST";
+import type { TokenType } from "../types/TokenValue";
+import { Lexer } from "./Lexer";
 
 export function parse(tex: string): Program {
   tex = tex.trimEnd();
@@ -9,53 +10,67 @@ export function parse(tex: string): Program {
 
 class Parser extends Lexer {
   parseProgram(): Program {
-    const children = this.parseInner();
-    this.consumeType("eof");
+    const children = this.parseUntil([]);
+    this.consumeType("EOF");
     return { type: "Program", children };
   }
 
   parseGroup(): Group {
     // Already consumed a "begin"
-    const children = this.parseInner();
-    this.consumeType("end");
+    const children = this.parseUntil(["End"]);
+    this.consumeType("End");
     return { type: "Group", children };
   }
 
-  parseInner(): Child[] {
+  parseUntil(types: TokenType[]): Child[] {
     const children = [];
     while (true) {
       const pt = this.peek().type;
-      if (pt === "eof" || pt === "end") return children;
+      if (pt === "EOF" || types.includes(pt)) return children;
       const next = this.parseSingle();
       if (next) children.push(next);
     }
   }
 
   parseSingle(): Child | undefined {
-    const peek = this.consume();
-    switch (peek.type) {
-      case "begin":
+    const token = this.consume();
+    switch (token.type) {
+      case "Begin":
         return this.parseGroup();
-      case "end":
-        throw this.pushFatalError("Unmatched '}'.", pos(peek));
-      case "newline":
+      case "End":
+        throw this.pushFatalError("Unmatched '}'.", token);
+      case "Newline":
         return { type: "Newline" };
-      case "other":
-        return { type: "Other", value: peek.value };
-      case "forced_output_space":
-        return { type: "Space" };
-      case "forced_code_space":
-        return { type: "SepSpace" };
-      case "symb_control":
-        return { type: "Control", value: peek.value, variant: "symb" };
-      case "word_control":
-        return { type: "Control", value: peek.value, variant: "word" };
-      case "eof":
-      case "space":
-      case "comment":
+      case "Other":
+        return { type: "Other", value: token.value };
+      case "Space":
+      case "SepSpace":
+        return token;
+      case "Control":
+        if (token.value === "\\def") return this.parseDef();
+        if (token.value === "\\let") return this.parseLet();
+        return token;
+      case "EOF":
         break;
       default:
-        peek.type satisfies never;
+        token satisfies never;
     }
+  }
+
+  parseDef(): Def {
+    // Already consumed a "\def"
+    const name = this.consumeType("Control");
+    const params = this.parseUntil(["Begin", "End"]);
+    this.consumeType("Begin");
+    const body = this.parseUntil(["End"]);
+    this.consumeType("End");
+    return { type: "Def", binding: name, params, body };
+  }
+
+  parseLet(): Let {
+    // Already consumed a "\let"
+    const name = this.consumeType("Control");
+    const rhs = this.consumeType("Control");
+    return { type: "Let", binding: name, rhs };
   }
 }

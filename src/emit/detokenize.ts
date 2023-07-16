@@ -1,4 +1,4 @@
-import type { EmitToken } from "./EmitToken";
+import type { Control, EmitToken } from "../types/TokenValue";
 
 export function detokenize(tokens: readonly EmitToken[]): string {
   let s = "";
@@ -12,7 +12,7 @@ export function detokenize(tokens: readonly EmitToken[]): string {
 
 function value(token: EmitToken, prev: EmitToken | undefined): string {
   const prevWordControl =
-    prev && prev.type === "Control" && prev.variant === "word";
+    prev && prev.type === "Control" && getVariant(prev) === "word";
   switch (token.type) {
     case "Space":
       if (prevWordControl) return "\\ ";
@@ -27,8 +27,21 @@ function value(token: EmitToken, prev: EmitToken | undefined): string {
       if (prevWordControl && /^[a-zA-Z]/.test(token.value))
         return " " + token.value;
       return token.value;
+    case "Begin":
+      return "{";
+    case "End":
+      return "}";
     default:
       token satisfies never;
       return "";
   }
+}
+
+function getVariant(token: Control) {
+  const s = token.value;
+  if (s.length === 0) throw new Error("Programming error: 0-length id.");
+  if (s.length === 1) return "active";
+  if (/^\\[a-zA-Z]+$/.test(s)) return "word";
+  if (/^\\.$/.test(s)) return "symb";
+  throw new Error(`Programming error: invalid id ${s}`);
 }

@@ -1,8 +1,8 @@
 import type { Child, Program } from "../types/AST";
-import type { EmitToken } from "./EmitToken";
+import type { EmitToken } from "../types/TokenValue";
 
 export function emitTokens(ast: Program): readonly EmitToken[] {
-  return ast.children.flatMap((c) => [...emit(c)]);
+  return [...emitAll(ast.children)];
 }
 
 function* emit(node: Child): Generator<EmitToken, void> {
@@ -15,11 +15,28 @@ function* emit(node: Child): Generator<EmitToken, void> {
       yield node;
       break;
     case "Group":
-      yield { type: "Other", value: "{" };
-      for (const child of node.children) yield* emit(child);
-      yield { type: "Other", value: "}" };
+      yield { type: "Begin" };
+      yield* emitAll(node.children);
+      yield { type: "End" };
+      break;
+    case "Def":
+      yield { type: "Control", value: "\\def" };
+      yield* emit(node.binding);
+      yield* emitAll(node.params);
+      yield { type: "Begin" };
+      yield* emitAll(node.body);
+      yield { type: "End" };
+      break;
+    case "Let":
+      yield { type: "Control", value: "\\let" };
+      yield* emit(node.binding);
+      yield* emit(node.rhs);
       break;
     default:
       node satisfies never;
   }
+}
+
+function* emitAll(nodes: Child[]): Generator<EmitToken, void> {
+  for (const child of nodes) yield* emit(child);
 }

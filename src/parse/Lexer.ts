@@ -1,11 +1,13 @@
 import * as moo from "moo";
 import { DiagnosticsState } from "../types/diagnostics";
 import type { Pos } from "../types/AST";
+import type { TokenValue } from "../types/TokenValue";
 
 const rules = {
   comment: { match: /%[^\n]*\n?/, lineBreaks: true },
   word_control: { match: /\\[A-Za-z]+ ?/, value: (s: string) => s.trimEnd() },
   symb_control: /\\./,
+  active: /[~\f]/,
   begin: /\{/,
   end: /\}/,
   newline: { match: /\n{2,}/, lineBreaks: true },
@@ -15,13 +17,20 @@ const rules = {
   other: { match: /[^]/, lineBreaks: true },
 };
 
-type TokenType = "eof" | keyof typeof rules;
+type RawToken = Exclude<moo.Token, "type"> & { type: keyof typeof rules };
 
-export type Token = Exclude<moo.Token, "type"> & { type: TokenType };
+type Token = TokenValue & {
+  /** line & col of `from` */
+  line: number;
+  col: number;
+  from: number;
+  to: number;
+  text: string;
+};
 
 export class Lexer extends DiagnosticsState {
   private curr: Token | null = null;
-  private prevToken?: Token;
+  private prevToken?: RawToken;
   private readonly lexer;
 
   constructor(input: string) {
@@ -31,25 +40,35 @@ export class Lexer extends DiagnosticsState {
   }
 
   private _next() {
-    const t = this.lexer.next() as Token | undefined;
+    const t = this.lexer.next() as RawToken | undefined;
     this.prevToken = t;
     return t;
   }
 
   private next(): Token {
-    const prev = this.prevToken;
-    const t = this._next();
-    if (t === undefined)
-      return {
-        type: "eof",
-        value: "",
-        offset: prev ? prev.offset + prev.text.length : 0,
-        text: "",
-        lineBreaks: 0,
-        line: prev ? prev.line + prev.lineBreaks : 0,
-        col: prev ? prev.col + prev.text.length : 0,
-      };
-    return t;
+    while (true) {
+      const prev = this.prevToken;
+      const t = this._next();
+      if (t === undefined)
+        return {
+          type: "EOF",
+          line: prev ? prev.line + prev.lineBreaks : 0,
+          col: prev ? prev.col + prev.text.length : 0,
+          from: prev ? prev.offset + prev.text.length : 0,
+          to: prev ? prev.offset + prev.text.length : 0,
+          text: "",
+        };
+      const value = tokenValue(t);
+      if (value !== undefined)
+        return {
+          ...value,
+          line: t.line,
+          col: t.col,
+          from: t.offset,
+          to: t.offset + t.text.length,
+          text: t.text,
+        };
+    }
   }
 
   peek() {
@@ -64,33 +83,27 @@ export class Lexer extends DiagnosticsState {
     return c;
   }
 
-  consume(expected?: string) {
-    while (true) {
-      const c = this._consume();
-      this.assertNotEOF(c);
-      if (expected === undefined || expected === c.value) return c;
-      this.pushError(
-        `Expected '${expected}' but got '${c.value}'. Skipping it.`,
-        pos(c)
-      );
-    }
+  consume() {
+    const c = this._consume();
+    this.assertNotEOF(c);
+    return c;
   }
 
-  consumeType(expected: TokenType) {
+  consumeType<T extends TokenValue["type"]>(expected: T) {
     while (true) {
       const c = this._consume();
-      if (expected !== "eof") this.assertNotEOF(c);
-      if (expected === c.type) return c;
+      if (expected !== "EOF") this.assertNotEOF(c);
+      if (expected === c.type) return c as Token & { type: T };
       this.pushError(
-        `Expected ${expected} but got '${c.value}'. Skipping it.`,
-        pos(c)
+        `Expected ${expected} but got '${c.text}'. Skipping it.`,
+        c
       );
     }
   }
 
   assertNotEOF(token: Token) {
-    if (token.type === "eof")
-      this.pushFatalError("Unexpected end of file", pos(token));
+    if (token.type === "EOF")
+      this.pushFatalError("Unexpected end of file", token);
   }
 
   pushFatalError(message: string, pos: Pos) {
@@ -99,11 +112,28 @@ export class Lexer extends DiagnosticsState {
   }
 }
 
-export function pos(p: Token): Pos {
-  return {
-    from: p.offset,
-    to: p.offset + p.text.length,
-    line: p.line,
-    col: p.col,
-  };
+function tokenValue(t: RawToken): TokenValue | undefined {
+  switch (t.type) {
+    case "comment":
+    case "space":
+      return undefined;
+    case "word_control":
+    case "symb_control":
+    case "active":
+      return { type: "Control", value: t.value };
+    case "begin":
+      return { type: "Begin" };
+    case "end":
+      return { type: "End" };
+    case "newline":
+      return { type: "Newline" };
+    case "forced_output_space":
+      return { type: "Space" };
+    case "forced_code_space":
+      return { type: "SepSpace" };
+    case "other":
+      return { type: "Other", value: t.value };
+    default:
+      t.type satisfies never;
+  }
 }
