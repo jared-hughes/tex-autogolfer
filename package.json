@@ -1,0 +1,71 @@
+{
+  "name": "tex-autogolfer",
+  "version": "0.1.0",
+  "description": "Auto-golfer for plain TeX code golf",
+  "main": "dist/cli.js",
+  "bin": {
+    "tex-autogolfer": "./dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jared-hughes/tex-autogolfer.git"
+  },
+  "homepage": "https://github.com/jared-hughes/polygolf#readme",
+  "bugs": {
+    "url": "https://github.com/jared-hughes/polygolf/issues"
+  },
+  "author": "Jared Hughes",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "@types/yargs": "^17.0.24",
+    "esbuild": "^0.18.13",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard-with-typescript": "^36.1.0",
+    "prettier": "^3.0.0",
+    "wireit": "^0.10.0"
+  },
+  "dependencies": {
+    "yargs": "^17.7.2"
+  },
+  "scripts": {
+    "build": "wireit",
+    "lint": "wireit",
+    "lint:types": "wireit",
+    "lint:eslint": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "node esbuild.mjs",
+      "files": [
+        "src/**",
+        "esbuild.mjs"
+      ],
+      "output": [
+        "dist/**"
+      ]
+    },
+    "lint": {
+      "dependencies": [
+        "lint:eslint",
+        "lint:types"
+      ]
+    },
+    "lint:types": {
+      "command": "tsc --noEmit --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**",
+        "tsconfig.json"
+      ]
+    },
+    "lint:eslint": {
+      "command": "eslint --color --cache \"**\"",
+      "files": [
+        "src/**",
+        ".eslintrc.js"
+      ]
+    }
+  }
+}
