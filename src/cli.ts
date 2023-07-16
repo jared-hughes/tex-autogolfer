@@ -3,6 +3,7 @@
 import yargs from "yargs";
 import fs from "fs";
 import path from "path";
+import { golf } from ".";
 
 const options = yargs()
   .options({
@@ -22,7 +23,8 @@ const options = yargs()
 
 let input = options.input;
 if (!fs.existsSync(input)) input += ".tex";
-const code = fs.readFileSync(input, { encoding: "utf-8" });
+let code = fs.readFileSync(input, { encoding: "utf-8" });
+code = golf(code);
 
 const output = options.output;
 if (output !== undefined) {

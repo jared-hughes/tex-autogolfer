@@ -2,3 +2,5 @@ node_modules
 dist
 .wireit
 scratch
+.vscode
+.eslintcache

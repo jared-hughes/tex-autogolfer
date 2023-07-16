@@ -18,12 +18,18 @@ module.exports = {
     ".eslintrc.js",
     "*.json",
     "*.md",
+    "*.tex",
   ],
   parser: "@typescript-eslint/parser",
   rules: {
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/restrict-plus-operands": "off",
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      { fixStyle: "separate-type-imports" },
+    ],
     "@typescript-eslint/no-confusing-void-expression": [
       "error",
       { ignoreArrowShorthand: true },

@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "strictNullChecks": true,
+    "outDir": "dist",
+    "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "bundler",
     "strict": true,
