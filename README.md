@@ -42,15 +42,17 @@ This tool makes no guarantee about preserving program correctness. However, ther
 - don't use multi-byte UTF-8 characters in places that would confuse the tool
   - TeX doesn't understand multi-byte characters (your code gets broken into bytes), but I decided to preserve them.
 - (I don't think this matters yet) ensure each identifier is only for one purpose (i.e. isn't re-defined)
-- instead of writing `\argv\x`, write `\argv{\x}` so it can be transformed to `\argv{\count1}` safely (WIP better syntax for this so the curly braces can be removed when the `\count` transform doesn't occur)
+- instead of writing `\argv\x`, write `\argv⦃\x⦄` so it can be transformed to `\argv{\count1}` safely if `\count` transform happens, or `\argv\x` otherwise.
 
 ## XCompose
 
 Sample `.XCompose` for the funny unicode.
 
 ```
-<Multi_key> <space> <space>	: "␣"
-<Multi_key> <slash> <slash>	: "⫽"
+<Multi_key> <space> <space>		: "␣"
+<Multi_key> <slash> <slash>		: "⫽"
+<Multi_key> <braceleft> <braceleft>	: "⦃"
+<Multi_key> <braceright> <braceright>	: "⦄"
 ```
 
 ## Dev

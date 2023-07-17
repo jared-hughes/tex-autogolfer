@@ -41,5 +41,13 @@ export interface NumSepHint {
   value: string;
 }
 
-export type TokenValue = SharedToken | NumSepHint | EOF;
+export interface BeginAuto {
+  type: "BeginAuto";
+}
+
+export interface EndAuto {
+  type: "EndAuto";
+}
+
+export type TokenValue = SharedToken | BeginAuto | EndAuto | NumSepHint | EOF;
 export type TokenType = TokenValue["type"];

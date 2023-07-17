@@ -8,7 +8,7 @@ export function mapNames(program: Program): Program {
     if (n.type !== "Control") return undefined;
     const value = mapping.get(n.value);
     if (value === undefined) return undefined;
-    return { type: "Control", value };
+    return { ...n, value };
   });
 }
 

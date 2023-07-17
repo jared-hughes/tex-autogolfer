@@ -14,9 +14,6 @@ function* emit(node: Child): Generator<EmitToken, void> {
     case "Newline":
       yield node;
       break;
-    case "NumSepAuto":
-      yield { type: "NumSep" };
-      break;
     case "Group":
       yield { type: "Begin" };
       yield* emitAll(node.children);

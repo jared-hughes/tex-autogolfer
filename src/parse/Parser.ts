@@ -27,21 +27,30 @@ class Parser extends Lexer {
   }
 
   parseUntil(types: TokenType[]): Child[] {
-    const children = [];
+    const children: Child[] = [];
     while (true) {
       const pt = this.peek().type;
       if (pt === "EOF" || types.includes(pt)) return children;
-      const next = this.parseSingle();
-      if (next) children.push(next);
+      const next = this.parseSingle(children.at(-1));
+      if (Array.isArray(next)) {
+        children.splice(children.length - 1, 1, ...next);
+      } else {
+        children.push(next);
+      }
     }
   }
 
-  parseSingle(): Child | undefined {
+  /** Returning Child means push that child. Returning [Child] means
+   * replace the end of the child list with that child. */
+  parseSingle(prev: Child | undefined): Child | [Child] {
     const token = this.consume();
     switch (token.type) {
       case "Begin":
         return this.parseGroup();
+      case "BeginAuto":
+        return this.parseCounterAuto();
       case "End":
+      case "EndAuto":
         throw this.pushFatalError("Unmatched '}'.", token);
       case "Newline":
         return { type: "Newline" };
@@ -53,8 +62,16 @@ class Parser extends Lexer {
         const len = token.value.length;
         if (len >= 3 || len === 0)
           this.pushWarning("Invalid num sep hint: must be '⫽' or '⫽⫽'", token);
-        if (len === 1) return { type: "NumSepAuto" };
-        else return { type: "NumSep" };
+        if (len === 1) {
+          if (!prev || prev.type !== "Control")
+            throw this.pushFatalError(
+              "'⫽' must be after a control sequence like \\x",
+              token
+            );
+          return [{ ...prev, needsSpaceAfterIfCount: true }];
+        } else {
+          return { type: "NumSep" };
+        }
       }
       case "Control":
         if (token.value === "\\def") return this.parseDef();
@@ -62,20 +79,19 @@ class Parser extends Lexer {
         if (token.value === "\\newcount") return this.parseNewcount();
         return token;
       case "EOF":
-        break;
-      default:
-        token satisfies never;
+        if (!prev) throw this.pushFatalError("Unexpected end of file", token);
+        return [prev];
     }
   }
 
-  parseNumSepHint(): Child {
-    // Already consumed a "⫽"
+  parseCounterAuto(): Child {
+    // Already consumed a "⦃"
     const name = this.consumeType("Control");
-    const params = this.parseUntil(["Begin", "End"]);
-    this.consumeType("Begin");
-    const body = this.parseUntil(["End"]);
-    this.consumeType("End");
-    return { type: "Def", binding: name, params, body };
+    this.consumeType("EndAuto");
+    return {
+      ...name,
+      needsBracesIfCount: true,
+    };
   }
 
   parseDef(): Def {

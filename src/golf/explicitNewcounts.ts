@@ -3,20 +3,20 @@ import { isNewcount } from "../types/AST";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
 
 export function explicitNewcounts(program: Program): Program {
-  return removeNumSepAuto(insertCounts(insertNumSepAuto(program)));
+  return insertCounts(insertNumSepAuto(program));
 }
 
 function insertNumSepAuto(program: Program) {
   return withListReplacer(program, (ns: Child[]) => {
     let someChanged = false;
-    const ret = ns.flatMap((n, i): Child[] => {
-      const prev = ns[i - 1];
-      const ins =
-        n.type === "Other" && /^\d/.test(n.value) && prev?.type === "Control";
+    const ret = ns.map((n, i): Child => {
+      const next = ns[i + 1];
+      if (n.type !== "Control") return n;
+      const ins = next?.type === "Other" && /^\d/.test(next.value);
       if (ins) {
         someChanged = true;
-        return [{ type: "NumSepAuto" }, n];
-      } else return [n];
+        return { ...n, needsSpaceAfterIfCount: true };
+      } else return n;
     });
     return someChanged ? ret : undefined;
   });
@@ -24,13 +24,18 @@ function insertNumSepAuto(program: Program) {
 
 function insertCounts(program: Program): Program {
   const mapping = pickCountMapping(program);
-  const prog = withReplacer(program, (n) => {
+  const prog = withReplacer(program, (n): Child[] | undefined => {
     // Remove \newcount\x and replace \x with \count1
     if (n.type === "Newcount") return [];
     if (n.type !== "Control") return undefined;
     const counter = mapping.get(n.value);
     if (counter === undefined) return undefined;
-    return [{ type: "Control", value: "\\Count" }, ...numberToItems(counter)];
+    const cnt = { type: "Control", value: "\\Count" } as const;
+    const numSep = n.needsSpaceAfterIfCount
+      ? [{ type: "NumSep" } as const]
+      : [];
+    const g = [cnt, ...numberToItems(counter), ...numSep];
+    return n.needsBracesIfCount ? [{ type: "Group", children: g }] : g;
   });
   return {
     type: "Program",
@@ -43,29 +48,6 @@ function insertCounts(program: Program): Program {
       ...prog.children,
     ],
   };
-}
-
-function removeNumSepAuto(program: Program) {
-  return withListReplacer(program, (ns: Child[]) => {
-    let someChanged = false;
-    const filtered = ns.filter((n, i) => {
-      const keep = n.type !== "NumSepAuto" || isAfterCount(ns, i);
-      if (!keep) someChanged = true;
-      return keep;
-    });
-    return someChanged ? filtered : undefined;
-  });
-}
-
-/** checks if ns[k...i-1] takes the form "\count123" for some k. */
-function isAfterCount(ns: Child[], i: number) {
-  for (let j = i - 1; j >= 0; j--) {
-    const curr = ns[j];
-    if (j < i - 1 && curr.type === "Control" && curr.value === "\\Count")
-      return true;
-    if (curr.type !== "Other" || !/^\d+$/.test(curr.value)) return false;
-  }
-  return false;
 }
 
 function numberToItems(n: number) {

@@ -11,6 +11,8 @@ const rules = {
   active: /[~\f]/,
   begin: /\{/,
   end: /\}/,
+  begin_auto: /⦃/,
+  end_auto: /⦄/,
   newline: { match: /\n{2,}/, lineBreaks: true },
   forced_output_space: /␣/,
   num_sep_hint: /⫽+/,
@@ -132,6 +134,10 @@ function tokenValue(t: RawToken, opts: ParseOpts): TokenValue | undefined {
       return { type: "Begin" };
     case "end":
       return { type: "End" };
+    case "begin_auto":
+      return { type: "BeginAuto" };
+    case "end_auto":
+      return { type: "EndAuto" };
     case "newline":
       return { type: "Newline" };
     case "forced_output_space":

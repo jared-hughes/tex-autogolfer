@@ -23,6 +23,8 @@ export interface Control {
    * variant "active": value is any single byte.
    */
   value: string;
+  needsSpaceAfterIfCount?: boolean;
+  needsBracesIfCount?: boolean;
 }
 
 export interface Newline {
@@ -37,11 +39,6 @@ export interface Space {
 /** A space that gets inserted in the code to avoid a number parsing past it */
 export interface NumSep {
   type: "NumSep";
-}
-
-/** Same as NumSep but only required if the control sequence before it gets converted to end in a number e.g. \count1 */
-export interface NumSepAuto {
-  type: "NumSepAuto";
 }
 
 export interface Group {
@@ -67,7 +64,7 @@ export interface Newcount {
   binding: Control;
 }
 
-export type Leaf = Other | Control | Newline | Space | NumSep | NumSepAuto;
+export type Leaf = Other | Control | Newline | Space | NumSep;
 
 export type ChildParent = Group | Def | Let | Newcount;
 
@@ -94,7 +91,6 @@ export function isParent(node: Node): node is Parent {
     case "Newline":
     case "Other":
     case "NumSep":
-    case "NumSepAuto":
     case "Space":
       node satisfies Exclude<Node, Parent>;
       return false;
