@@ -1,33 +1,79 @@
-import { isBinder, isControl, Node, Program } from "../types/AST";
-import { filter, unique, withReplacer } from "./traversal";
+import { isBinder, isControl, isLet, Node, Program } from "../types/AST";
+import { Control } from "../types/TokenValue";
+import {
+  filter,
+  splitCompactMap,
+  trimStart,
+  unique,
+  withReplacer,
+} from "./traversal";
 
 export function rename(program: Program): Program {
-  const mapping = pickNameMapping(program);
-  return withReplacer(program, (n) => {
+  const { satisfy: _forcedRenames, unsatisfy: golfs } = splitCompactMap(
+    program.golfs,
+    (g) => {
+      const t = trimStart(g, "rename");
+      if (t === undefined) return undefined;
+      if (t.length !== 2)
+        throw new Error(
+          `Expected exactly two identifiers after 'rebind' but got ${t.length}`
+        );
+      const bad = t.filter((c) => c.type !== "Control");
+      if (bad.length > 0)
+        throw new Error(
+          `Expected Control after 'rebind' but got ${bad[0].type}`
+        );
+      return (t as Control[]).map((c) => c.value) as [string, string];
+    }
+  );
+  const forcedRenames = new Map(_forcedRenames);
+  if (forcedRenames.size < _forcedRenames.length)
+    throw new Error("Duplicate \\usegolf{\\rename<id1><id2>}");
+  const mapping = pickNameMapping(program, forcedRenames);
+  const prog = withReplacer(program, (n) => {
     if (n.type !== "Control") return undefined;
     const value = mapping.get(n.value);
     if (value === undefined) return undefined;
     return { ...n, value };
   });
+  return { ...prog, golfs };
 }
 
-function pickNameMapping(program: Program) {
+function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
   // Reduce everything to backslash + one letter
   // Except whatever is most frequent becomes tilde
   const free = renameable(program);
-  const counts = [...getNameCounts(program)].filter(([id]) =>
-    free.includes(id)
+  const lets = [...filter(program, isLet)];
+  const mapping = new Map(
+    [...forcedRenames].map(([k, v]) => {
+      if (free.includes(k)) return [k, v];
+      const vv = lets.filter((x) => x.rhs.value === k);
+      if (vv.length === 0)
+        throw new Error(`Cannot find binding for \\usegolf{\\rename${k}...}`);
+      return [vv[0].binding.value, v];
+    })
   );
-  const mapping = new Map<string, string>();
-  if (counts.length === 0) return mapping;
-  const [mostFrequent] = counts.reduce(([old, bestCount], [id, count]) =>
-    count > bestCount ? [id, count] : [old, bestCount]
+  const counts = new Map(
+    [...getNameCounts(program)].filter(([id]) => free.includes(id))
   );
-  let i = 0;
-  for (const name of free.filter((x) => x !== mostFrequent)) {
-    mapping.set(name, "\\" + ids[i++]);
+  if (counts.size === 0) return mapping;
+  const freefree = free
+    .filter((x) => !mapping.has(x))
+    .sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0));
+  let i = -1;
+  function nextID() {
+    while (i < ids.length) {
+      const opt = i === -1 ? "~" : "\\" + ids[i];
+      if (![...mapping.values()].includes(opt)) {
+        return opt;
+      }
+      ++i;
+    }
+    throw new Error("Too many IDs");
   }
-  mapping.set(mostFrequent, "~");
+  for (const name of freefree) {
+    mapping.set(name, nextID());
+  }
   return mapping;
 }
 

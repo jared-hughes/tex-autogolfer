@@ -54,6 +54,13 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
    - The most-common identifier is renamed to `~`, which is the only default active character that works everywhere. Make sure not to use `~` for a space: use `␣` instead.
    - (Not yet implemented) some way to allow form-feed and other single-byte active characters
 
+1. `\usegolf{rename<control-seq-1><control-seq-2>}`: specify a particular rename to use
+
+   - E.g. `\usegolf{rename\def\D}` renames `\def` to `\D` instead of whatever arbitrarily chosen identifier like `\$`.
+   - Has no effect if `\usegolf{rename}` is not provided
+     - (for forwards compatibility with a future decision of either enabling renaming everything, or just renaming that one thing)
+   - Note that formfeed `` (0x0C) is an active character, but only works in some contexts, so it's not automatically chosen. You can use it like `\usegolf{rename\def}`.
+
 There's one more option. If you write `--preserve-newlines` on the command line, then the parser will not delete newlines.
 
 ## Disclaimer
@@ -90,4 +97,6 @@ npm run build --watch
 npm run lint --watch
 # CLI, only after a build
 node ./dist/cli.js scratch/a.tex > scratch/b.tex
+# View form-feeds in output, and add trailing newline
+node ./dist/cli.js examples/ex6.tex | sed -e 's/\f/�/g'; echo
 ```
