@@ -32,12 +32,25 @@ Output (36 bytes):
 
 This tool makes no guarantee about preserving program correctness. However, there are some ways you can help the tool ensure it doesn't change program behavior:
 
-- mark required spaces (for typography) as `␣`
-- mark required spaces (for preventing e.g. a number from running on too long) as `⫽`
+- mark required spaces (for typography) as `␣`. These convert to ` ` or `\ ` (if the ` ` would be gobbled)
+- mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` `
+- if the space is only required if the control sequence before it gets converted to end in a number like `\count1`, then write `⫽`
+  - these are automatically inserted before any digit preceded by a control sequence
+  - e.g. a macro to mod counter `\d` by a number literal can be written `\def\m#1;{\u\d\divide\u⫽#1\multiply\u⫽#1\advance\d-\u}` and used `\m17;`
 - don't mess with `\catcode`s
 - don't use multi-byte UTF-8 characters in places that would confuse the tool
   - TeX doesn't understand multi-byte characters (your code gets broken into bytes), but I decided to preserve them.
 - (I don't think this matters yet) ensure each identifier is only for one purpose (i.e. isn't re-defined)
+- instead of writing `\argv\x`, write `\argv{\x}` so it can be transformed to `\argv{\count1}` safely (WIP better syntax for this so the curly braces can be removed when the `\count` transform doesn't occur)
+
+## XCompose
+
+Sample `.XCompose` for the funny unicode.
+
+```
+<Multi_key> <space> <space>	: "␣"
+<Multi_key> <slash> <slash>	: "⫽"
+```
 
 ## Dev
 

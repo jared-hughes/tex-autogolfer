@@ -29,12 +29,19 @@ export interface Newline {
   type: "Newline";
 }
 
+/** A space that gets inserted to change the output. */
 export interface Space {
   type: "Space";
 }
 
-export interface SepSpace {
-  type: "SepSpace";
+/** A space that gets inserted in the code to avoid a number parsing past it */
+export interface NumSep {
+  type: "NumSep";
+}
+
+/** Same as NumSep but only required if the control sequence before it gets converted to end in a number e.g. \count1 */
+export interface NumSepAuto {
+  type: "NumSepAuto";
 }
 
 export interface Group {
@@ -55,9 +62,14 @@ export interface Let {
   rhs: Control;
 }
 
-export type Leaf = Other | Control | Newline | Space | SepSpace;
+export interface Newcount {
+  type: "Newcount";
+  binding: Control;
+}
 
-export type ChildParent = Group | Def | Let;
+export type Leaf = Other | Control | Newline | Space | NumSep | NumSepAuto;
+
+export type ChildParent = Group | Def | Let | Newcount;
 
 export type Child = Leaf | ChildParent;
 
@@ -67,7 +79,27 @@ export type Parent = UnchildParent | ChildParent;
 
 export type Node = Parent | Child;
 
-/// / Helpers
+/// Helpers
+
+export function isParent(node: Node): node is Parent {
+  switch (node.type) {
+    case "Program":
+    case "Group":
+    case "Def":
+    case "Let":
+    case "Newcount":
+      node satisfies Parent;
+      return true;
+    case "Control":
+    case "Newline":
+    case "Other":
+    case "NumSep":
+    case "NumSepAuto":
+    case "Space":
+      node satisfies Exclude<Node, Parent>;
+      return false;
+  }
+}
 
 export function isDef(node: Node): node is Def {
   return node.type === "Def";
@@ -77,8 +109,14 @@ export function isLet(node: Node): node is Let {
   return node.type === "Let";
 }
 
-export function isBinder(node: Node): node is Def | Let {
-  return isDef(node) || isLet(node);
+export function isNewcount(node: Node): node is Newcount {
+  return node.type === "Newcount";
+}
+
+export type Binder = Def | Let | Newcount;
+
+export function isBinder(node: Node): node is Binder {
+  return isDef(node) || isLet(node) || isNewcount(node);
 }
 
 export function isControl(node: Node): node is Control {

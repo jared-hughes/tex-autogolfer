@@ -10,9 +10,12 @@ function* emit(node: Child): Generator<EmitToken, void> {
     case "Control":
     case "Other":
     case "Space":
-    case "SepSpace":
+    case "NumSep":
     case "Newline":
       yield node;
+      break;
+    case "NumSepAuto":
+      yield { type: "NumSep" };
       break;
     case "Group":
       yield { type: "Begin" };
@@ -31,6 +34,10 @@ function* emit(node: Child): Generator<EmitToken, void> {
       yield { type: "Control", value: "\\let" };
       yield* emit(node.binding);
       yield* emit(node.rhs);
+      break;
+    case "Newcount":
+      yield { type: "Control", value: "\\newcount" };
+      yield* emit(node.binding);
       break;
     default:
       node satisfies never;

@@ -1,4 +1,4 @@
-import type { Child, Node, Parent, Program } from "../types/AST";
+import { isParent, type Child, type Node, type Program } from "../types/AST";
 
 /** A map of a function over all nodes in pre-order traversal order, followed
  * by removal of `undefined` return values. Returns a generator, so is a no-op
@@ -34,85 +34,139 @@ function children(node: Node): Child[] {
       return [node.binding, ...node.params, ...node.body];
     case "Let":
       return [node.binding, node.rhs];
+    case "Newcount":
+      return [node.binding];
     default:
       node satisfies never;
       return [];
   }
 }
 
-function isParent(node: Node): node is Parent {
-  switch (node.type) {
-    case "Program":
-    case "Group":
-    case "Def":
-    case "Let":
-      node satisfies Parent;
-      return true;
-    case "Control":
-    case "Newline":
-    case "Other":
-    case "SepSpace":
-    case "Space":
-      node satisfies Exclude<Node, Parent>;
-      return false;
-  }
+type ChildVisitor = Visitor<Child | Child[] | undefined>;
+
+export function withReplacer(node: Program, replacer: ChildVisitor): Program {
+  const [s, children] = flatMapSomeChanged(node.children, replacer);
+  if (!s) return node;
+  return { type: "Program", children };
 }
 
-type ChildVisitor = Visitor<Child | undefined>;
-
-export function withReplacer(node: Child, replacer: ChildVisitor): Child;
-export function withReplacer(node: Program, replacer: ChildVisitor): Program;
-export function withReplacer(node: Node, replacer: ChildVisitor): Node {
-  // never replace the whole program
-  const ret = node.type === "Program" ? undefined : replacer(node);
+function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
+  const ret = replacer(node);
   if (ret === undefined) {
-    if (!isParent(node)) return node;
+    if (!isParent(node)) return [node];
     // recurse on children
     switch (node.type) {
-      case "Program":
       case "Group": {
-        const [children, s] = mapSomeChanged(node.children, replacer);
-        if (!s) return node;
-        return { type: node.type, children };
+        const [s, children] = flatMapSomeChanged(node.children, replacer);
+        if (!s) return [node];
+        return [{ type: "Group", children }];
       }
       case "Def": {
-        const [name, s1] = mapSomeChanged([node.binding], replacer);
-        const [params, s2] = mapSomeChanged(node.params, replacer);
-        const [body, s3] = mapSomeChanged(node.body, replacer);
-        if (!(s1 || s2 || s3)) return node;
-        if (name.length !== 1 || name[0].type !== "Control")
+        const [s1, [binding]] = mapSomeChanged([node.binding], replacer);
+        const [s2, params] = flatMapSomeChanged(node.params, replacer);
+        const [s3, body] = flatMapSomeChanged(node.body, replacer);
+        if (!(s1 || s2 || s3)) return [node];
+        if (binding.type !== "Control")
           throw new Error(
-            "Programming Error: Replaced Def Control with non-Control"
+            "Programming Error: Replaced Def binding with non-Control"
           );
-        return { type: "Def", binding: name[0], params, body };
+        return [{ type: "Def", binding, params, body }];
       }
       case "Let": {
-        const [r, s] = mapSomeChanged([node.binding, node.rhs], replacer);
-        if (!s) return node;
-        if (
-          r.length !== 2 ||
-          r[0].type !== "Control" ||
-          r[1].type !== "Control"
-        )
+        const [s, [binding, rhs]] = mapSomeChanged(
+          [node.binding, node.rhs],
+          replacer
+        );
+        if (!s) return [node];
+        if (binding.type !== "Control" || rhs.type !== "Control")
           throw new Error(
-            "Programming Error: Replaced Let Control with non-Control"
+            "Programming Error: Replaced Let binding with non-Control"
           );
-        return { type: "Let", binding: r[0], rhs: r[1] };
+        return [{ type: "Let", binding, rhs }];
+      }
+      case "Newcount": {
+        const [s, [binding]] = mapSomeChanged([node.binding], replacer);
+        if (!s) return [node];
+        if (binding.type !== "Control")
+          throw new Error(
+            "Programming Error: Replaced NewCount binding with non-Control"
+          );
+        return [{ type: "Newcount", binding }];
       }
     }
     node satisfies never;
   } else {
     // Don't recurse, to avoid replacement loops.
-    return ret;
+    // Call withReplacer again in the replacement if you want to replace the new stuff
+    return Array.isArray(ret) ? ret : [ret];
   }
 }
 
-function mapSomeChanged(arr: Child[], replacer: Visitor<Child | undefined>) {
+function flatMapSomeChanged(arr: Child[], replacer: ChildVisitor) {
   let someChanged = false;
-  const replaced = arr.map((c) => {
-    const d = withReplacer(c, replacer);
-    if (d !== c) someChanged = true;
+  const replaced = arr.flatMap((c) => {
+    const d = _withReplacer(c, replacer);
+    if (d.length !== 1 || d[0] !== c) someChanged = true;
     return d;
   });
-  return [replaced, someChanged] as const;
+  return [someChanged, replaced] as const;
+}
+
+function mapSomeChanged(arr: Child[], replacer: ChildVisitor) {
+  let someChanged = false;
+  const replaced = arr.map((c) => {
+    const d = _withReplacer(c, replacer);
+    if (d.length !== 1)
+      throw new Error(
+        `Can only replace this with one node, but got ${d.length}.`
+      );
+    if (d[0] !== c) someChanged = true;
+    return d[0];
+  });
+  return [someChanged, replaced] as const;
+}
+
+export function unique(s: string[]): string[] {
+  return [...new Set(s)];
+}
+
+type ListReplacer = (node: Child[]) => Child[] | undefined;
+
+export function withListReplacer(
+  node: Program,
+  replacer: ListReplacer
+): Program {
+  const [_a, c1] = _listReplacerList(node.children, replacer);
+  return { type: "Program", children: replacer(c1) ?? c1 };
+}
+
+function _listReplacerList(ns: Child[], replacer: ListReplacer) {
+  const [s, ns2] = mapSomeChanged(ns, (n) => _withListReplacer(n, replacer));
+  const ns3 = replacer(ns2);
+  if (ns3 === undefined) return [s, ns2] as const;
+  else return [true, ns3] as const;
+}
+
+function _withListReplacer(
+  n: Child,
+  replacer: ListReplacer
+): Child | undefined {
+  if (!isParent(n)) return undefined;
+  const f = (ns: Child[]) => _listReplacerList(ns, replacer);
+  switch (n.type) {
+    case "Let":
+    case "Newcount":
+      return undefined;
+    case "Group": {
+      const [s, children] = f(n.children);
+      if (!s) return n;
+      return { type: "Group", children };
+    }
+    case "Def": {
+      const [s1, params] = f(n.params);
+      const [s2, body] = f(n.body);
+      if (!(s1 || s2)) return n;
+      return { type: "Def", binding: n.binding, params, body };
+    }
+  }
 }

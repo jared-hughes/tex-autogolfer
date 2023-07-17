@@ -13,7 +13,7 @@ const rules = {
   end: /\}/,
   newline: { match: /\n{2,}/, lineBreaks: true },
   forced_output_space: /␣/,
-  forced_code_space: /⫽/,
+  num_sep_hint: /⫽+/,
   solo_newline: { match: /\n/, lineBreaks: true },
   space: / +/,
   other: { match: /[^]/, lineBreaks: true },
@@ -136,8 +136,8 @@ function tokenValue(t: RawToken, opts: ParseOpts): TokenValue | undefined {
       return { type: "Newline" };
     case "forced_output_space":
       return { type: "Space" };
-    case "forced_code_space":
-      return { type: "SepSpace" };
+    case "num_sep_hint":
+      return { type: "NumSepHint", value: t.value };
     case "other":
       return { type: "Other", value: t.value };
     default:

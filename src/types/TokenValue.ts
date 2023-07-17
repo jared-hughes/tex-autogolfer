@@ -11,8 +11,8 @@ export interface Space {
   type: "Space";
 }
 
-export interface SepSpace {
-  type: "SepSpace";
+export interface NumSep {
+  type: "NumSep";
 }
 
 export interface Other {
@@ -28,19 +28,18 @@ export interface End {
   type: "End";
 }
 
-export type EmitToken =
-  | Control
-  | Newline
-  | Space
-  | SepSpace
-  | Other
-  | Begin
-  | End;
+export type SharedToken = Control | Newline | Space | Other | Begin | End;
+export type EmitToken = SharedToken | NumSep;
 export type EmitTokenType = EmitToken["type"];
 
 export interface EOF {
   type: "EOF";
 }
 
-export type TokenValue = EmitToken | EOF;
+export interface NumSepHint {
+  type: "NumSepHint";
+  value: string;
+}
+
+export type TokenValue = SharedToken | NumSepHint | EOF;
 export type TokenType = TokenValue["type"];

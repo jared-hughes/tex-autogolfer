@@ -17,7 +17,7 @@ function value(token: EmitToken, prev: EmitToken | undefined): string {
     case "Space":
       if (prevWordControl) return "\\ ";
       return " ";
-    case "SepSpace":
+    case "NumSep":
       if (prevWordControl) return "{}";
       return " ";
     case "Newline":
