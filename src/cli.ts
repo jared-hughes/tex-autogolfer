@@ -4,29 +4,58 @@
 import parseArgs from "minimist";
 import fs from "fs";
 import path from "path";
+import type { Opts } from ".";
 import { golf } from ".";
 
-const options = parseArgs(process.argv.slice(2), { boolean: true });
+const options = parseArgs(process.argv.slice(2), {
+  boolean: true,
+  default: {
+    "preserve-newlines": false,
+    "explicit-newcounts": true,
+    "map-names": true,
+  },
+});
 
-const HELP = `Usage: tex-autogolfer [OPTION]... [FILE]
+const HELP = `
+Usage: tex-autogolfer [OPTION]... [FILE]
 Golfs the TeX FILE by renaming identifiers, removing whitespace, etc.
 
 Options:
-  --preserve-newlines       keep input newlines in the output`;
+  --preserve-newlines       keep input newlines in the output
+  --no-explicit-newcounts   disable introduction of \\count
+  --no-map-names            disable renaming from \\let, \\def, etc.
+`.trim();
 if (options.h) {
   console.log(HELP);
   process.exit(0);
 }
 
-const opts = {
-  preserveNewlines: !!options["preserve-newlines"],
-};
+function consumeOption(s: string) {
+  const res = options[s];
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete options[s];
+  return res;
+}
 
-const positional = options._;
+const opts = {
+  preserveNewlines: !!consumeOption("preserve-newlines"),
+  "explicit-newcounts": !!consumeOption("explicit-newcounts"),
+  "map-names": !!consumeOption("map-names"),
+} satisfies Opts;
+
+const bad = Object.keys(options).filter((x) => x !== "_");
+
+for (const key of bad) {
+  console.error("Unrecognized option: %s", key);
+}
+if (bad.length > 0) process.exit(1);
+
+const positional = consumeOption("_");
 if (positional.length !== 1) {
-  console.log("Must specify exactly one file");
+  console.error("Must specify exactly one file");
   process.exit(1);
 }
+
 let input = positional[0];
 if (!fs.existsSync(input)) input += ".tex";
 let code = fs.readFileSync(input, { encoding: "utf-8" });
