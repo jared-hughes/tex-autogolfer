@@ -1,5 +1,5 @@
 import type { Child, Node, Other, Program } from "../types/AST";
-import { isNewcount } from "../types/AST";
+import { control, isNewcount } from "../types/AST";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
 
 export function explicitNewcounts(program: Program): Program {
@@ -30,7 +30,7 @@ function insertCounts(program: Program): Program {
     if (n.type !== "Control") return undefined;
     const counter = mapping.get(n.value);
     if (counter === undefined) return undefined;
-    const cnt = { type: "Control", value: "\\Count" } as const;
+    const cnt = { type: "Control", value: "\\count" } as const;
     const numSep = n.needsSpaceAfterIfCount
       ? [{ type: "NumSep" } as const]
       : [];
@@ -41,9 +41,8 @@ function insertCounts(program: Program): Program {
     type: "Program",
     children: [
       {
-        type: "Let",
-        binding: { type: "Control", value: "\\Count" },
-        rhs: { type: "Control", value: "\\count" },
+        type: "Rebind",
+        binding: control("\\count"),
       },
       ...prog.children,
     ],

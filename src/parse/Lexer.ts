@@ -13,7 +13,7 @@ const rules = {
   end: /\}/,
   begin_auto: /⦃/,
   end_auto: /⦄/,
-  newline: { match: /\n{2,}/, lineBreaks: true },
+  newline: { match: /\n(?:\s*\n)+/, lineBreaks: true },
   forced_output_space: /␣/,
   num_sep_hint: /⫽+/,
   solo_newline: { match: /\n/, lineBreaks: true },

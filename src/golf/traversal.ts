@@ -1,4 +1,5 @@
-import { isParent, type Child, type Node, type Program } from "../types/AST";
+import { isParent } from "../types/AST";
+import type { Control, Child, Node, Program } from "../types/AST";
 
 /** A map of a function over all nodes in pre-order traversal order, followed
  * by removal of `undefined` return values. Returns a generator, so is a no-op
@@ -31,10 +32,12 @@ function children(node: Node): Child[] {
     case "Group":
       return node.children;
     case "Def":
-      return [node.binding, ...node.params, ...node.body];
+      return [node.callee, node.binding, ...node.params, ...node.body];
     case "Let":
-      return [node.binding, node.rhs];
+      return [node.callee, node.binding, node.rhs];
     case "Newcount":
+      return [node.callee, node.binding];
+    case "Rebind":
       return [node.binding];
     default:
       node satisfies never;
@@ -62,36 +65,35 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
         return [{ type: "Group", children }];
       }
       case "Def": {
-        const [s1, [binding]] = mapSomeChanged([node.binding], replacer);
+        const [s1, [callee, binding]] = mapSomeChangedControl(
+          [node.callee, node.binding],
+          replacer
+        );
         const [s2, params] = flatMapSomeChanged(node.params, replacer);
         const [s3, body] = flatMapSomeChanged(node.body, replacer);
         if (!(s1 || s2 || s3)) return [node];
-        if (binding.type !== "Control")
-          throw new Error(
-            "Programming Error: Replaced Def binding with non-Control"
-          );
-        return [{ type: "Def", binding, params, body }];
+        return [{ type: "Def", callee, binding, params, body }];
       }
       case "Let": {
-        const [s, [binding, rhs]] = mapSomeChanged(
-          [node.binding, node.rhs],
+        const [s, [callee, binding, rhs]] = mapSomeChangedControl(
+          [node.callee, node.binding, node.rhs],
           replacer
         );
         if (!s) return [node];
-        if (binding.type !== "Control" || rhs.type !== "Control")
-          throw new Error(
-            "Programming Error: Replaced Let binding with non-Control"
-          );
-        return [{ type: "Let", binding, rhs }];
+        return [{ type: "Let", callee, binding, rhs }];
       }
       case "Newcount": {
-        const [s, [binding]] = mapSomeChanged([node.binding], replacer);
+        const [s, [callee, binding]] = mapSomeChangedControl(
+          [node.callee, node.binding],
+          replacer
+        );
         if (!s) return [node];
-        if (binding.type !== "Control")
-          throw new Error(
-            "Programming Error: Replaced NewCount binding with non-Control"
-          );
-        return [{ type: "Newcount", binding }];
+        return [{ type: node.type, binding, callee }];
+      }
+      case "Rebind": {
+        const [s, [binding]] = mapSomeChangedControl([node.binding], replacer);
+        if (!s) return [node];
+        return [{ type: node.type, binding }];
       }
     }
     node satisfies never;
@@ -124,6 +126,16 @@ function mapSomeChanged(arr: Child[], replacer: ChildVisitor) {
     return d[0];
   });
   return [someChanged, replaced] as const;
+}
+
+function mapSomeChangedControl(arr: Control[], replacer: ChildVisitor) {
+  const [s, v] = mapSomeChanged(arr, replacer);
+  const v2 = v.map((x) => {
+    if (x.type !== "Control")
+      throw new Error("Replaced Control with non-Control");
+    return x;
+  });
+  return [s, v2] as const;
 }
 
 export function unique(s: string[]): string[] {
@@ -166,7 +178,7 @@ function _withListReplacer(
       const [s1, params] = f(n.params);
       const [s2, body] = f(n.body);
       if (!(s1 || s2)) return n;
-      return { type: "Def", binding: n.binding, params, body };
+      return { ...n, params, body };
     }
   }
 }

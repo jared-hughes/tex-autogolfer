@@ -1,4 +1,13 @@
-import type { Child, Def, Group, Let, Newcount, Program } from "../types/AST";
+import type {
+  Child,
+  Def,
+  Group,
+  Let,
+  Newcount,
+  Program,
+  Rebind,
+} from "../types/AST";
+import { control } from "../types/AST";
 import type { TokenType } from "../types/TokenValue";
 import { Lexer } from "./Lexer";
 
@@ -77,6 +86,7 @@ class Parser extends Lexer {
         if (token.value === "\\def") return this.parseDef();
         if (token.value === "\\let") return this.parseLet();
         if (token.value === "\\newcount") return this.parseNewcount();
+        if (token.value === "\\rebind") return this.parseRebind();
         return token;
       case "EOF":
         if (!prev) throw this.pushFatalError("Unexpected end of file", token);
@@ -101,19 +111,31 @@ class Parser extends Lexer {
     this.consumeType("Begin");
     const body = this.parseUntil(["End"]);
     this.consumeType("End");
-    return { type: "Def", binding: name, params, body };
+    return {
+      type: "Def",
+      callee: control("\\def"),
+      binding: name,
+      params,
+      body,
+    };
   }
 
   parseLet(): Let {
     // Already consumed a "\let"
     const name = this.consumeType("Control");
     const rhs = this.consumeType("Control");
-    return { type: "Let", binding: name, rhs };
+    return { type: "Let", callee: control("\\let"), binding: name, rhs };
   }
 
   parseNewcount(): Newcount {
     // Already consumed a "\newcount"
     const binding = this.consumeType("Control");
-    return { type: "Newcount", binding };
+    return { type: "Newcount", callee: control("\\newcount"), binding };
+  }
+
+  parseRebind(): Rebind {
+    // Already consumed a "\rebind"
+    const binding = this.consumeType("Control");
+    return { type: "Rebind", binding };
   }
 }

@@ -11,6 +11,8 @@ Highly-golfed TeX programs are hard to maintain. This tool strives to:
 - ✓ handle transformation of e.g. `\newcount\x`, `\x` to `\count1`
 - ✓ remove whitespace and comments
 
+Use `\rebind\def` if you want to rename all the `\def` to a shorter identifier.
+
 ## Example
 
 Input (71 bytes):

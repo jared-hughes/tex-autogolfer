@@ -48,6 +48,7 @@ export interface Group {
 
 export interface Def {
   type: "Def";
+  callee: Control;
   binding: Control;
   params: Child[];
   body: Child[];
@@ -55,18 +56,25 @@ export interface Def {
 
 export interface Let {
   type: "Let";
+  callee: Control;
   binding: Control;
   rhs: Control;
 }
 
 export interface Newcount {
   type: "Newcount";
+  callee: Control;
+  binding: Control;
+}
+
+export interface Rebind {
+  type: "Rebind";
   binding: Control;
 }
 
 export type Leaf = Other | Control | Newline | Space | NumSep;
 
-export type ChildParent = Group | Def | Let | Newcount;
+export type ChildParent = Group | Def | Let | Newcount | Rebind;
 
 export type Child = Leaf | ChildParent;
 
@@ -85,6 +93,7 @@ export function isParent(node: Node): node is Parent {
     case "Def":
     case "Let":
     case "Newcount":
+    case "Rebind":
       node satisfies Parent;
       return true;
     case "Control":
@@ -109,6 +118,10 @@ export function isNewcount(node: Node): node is Newcount {
   return node.type === "Newcount";
 }
 
+export function isRebind(node: Node): node is Rebind {
+  return node.type === "Rebind";
+}
+
 export type Binder = Def | Let | Newcount;
 
 export function isBinder(node: Node): node is Binder {
@@ -117,4 +130,8 @@ export function isBinder(node: Node): node is Binder {
 
 export function isControl(node: Node): node is Control {
   return node.type === "Control";
+}
+
+export function control(value: string): Control {
+  return { type: "Control", value };
 }

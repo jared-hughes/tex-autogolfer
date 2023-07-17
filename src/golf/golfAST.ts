@@ -1,9 +1,11 @@
 import type { Program } from "../types/AST";
 import { explicitNewcounts } from "./explicitNewcounts";
 import { mapNames } from "./mapNames";
+import { rebind } from "./rebind";
 
 export const transforms = [
   { name: "explicit-newcounts", transform: explicitNewcounts },
+  { name: "rebind", transform: rebind },
   { name: "map-names", transform: mapNames },
 ] as const;
 

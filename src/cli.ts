@@ -13,6 +13,7 @@ const options = parseArgs(process.argv.slice(2), {
     "preserve-newlines": false,
     "explicit-newcounts": true,
     "map-names": true,
+    rebind: true,
   },
 });
 
@@ -24,6 +25,7 @@ Options:
   --preserve-newlines       keep input newlines in the output
   --no-explicit-newcounts   disable introduction of \\count
   --no-map-names            disable renaming from \\let, \\def, etc.
+  --no-rebind               ignore \\rebind
 `.trim();
 if (options.h) {
   console.log(HELP);
@@ -41,6 +43,7 @@ const opts = {
   preserveNewlines: !!consumeOption("preserve-newlines"),
   "explicit-newcounts": !!consumeOption("explicit-newcounts"),
   "map-names": !!consumeOption("map-names"),
+  rebind: !!consumeOption("rebind"),
 } satisfies Opts;
 
 const bad = Object.keys(options).filter((x) => x !== "_");

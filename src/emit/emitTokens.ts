@@ -20,7 +20,7 @@ function* emit(node: Child): Generator<EmitToken, void> {
       yield { type: "End" };
       break;
     case "Def":
-      yield { type: "Control", value: "\\def" };
+      yield* emit(node.callee);
       yield* emit(node.binding);
       yield* emitAll(node.params);
       yield { type: "Begin" };
@@ -28,13 +28,16 @@ function* emit(node: Child): Generator<EmitToken, void> {
       yield { type: "End" };
       break;
     case "Let":
-      yield { type: "Control", value: "\\let" };
+      yield* emit(node.callee);
       yield* emit(node.binding);
       yield* emit(node.rhs);
       break;
     case "Newcount":
-      yield { type: "Control", value: "\\newcount" };
+      yield* emit(node.callee);
       yield* emit(node.binding);
+      break;
+    case "Rebind":
+      // rebind plugin was not applied
       break;
     default:
       node satisfies never;
