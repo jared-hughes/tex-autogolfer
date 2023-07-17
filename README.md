@@ -5,9 +5,10 @@
 Highly-golfed TeX programs are hard to maintain. This tool strives to:
 
 - shrink identifiers to shorter identifiers, in some situations:
-  - ✓ renaming stuff defined by `\def`
-  - Using `\let` to re-define builtin names
+  - ✓ renaming stuff defined by `\def` or `\let`
+  - ✓ Using `\let` to re-define builtin names
   - Using `\catcode` to make some bytes active
+- ✓ handle transformation of e.g. `\newcount\x`, `\x` to `\count1`
 - ✓ remove whitespace and comments
 
 ## Example

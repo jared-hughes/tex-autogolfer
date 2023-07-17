@@ -22,16 +22,27 @@ function insertNumSepAuto(program: Program) {
   });
 }
 
-function insertCounts(program: Program) {
+function insertCounts(program: Program): Program {
   const mapping = pickCountMapping(program);
-  return withReplacer(program, (n) => {
+  const prog = withReplacer(program, (n) => {
     // Remove \newcount\x and replace \x with \count1
     if (n.type === "Newcount") return [];
     if (n.type !== "Control") return undefined;
     const counter = mapping.get(n.value);
     if (counter === undefined) return undefined;
-    return [{ type: "Control", value: "\\count" }, ...numberToItems(counter)];
+    return [{ type: "Control", value: "\\Count" }, ...numberToItems(counter)];
   });
+  return {
+    type: "Program",
+    children: [
+      {
+        type: "Let",
+        binding: { type: "Control", value: "\\Count" },
+        rhs: { type: "Control", value: "\\count" },
+      },
+      ...prog.children,
+    ],
+  };
 }
 
 function removeNumSepAuto(program: Program) {
@@ -50,7 +61,7 @@ function removeNumSepAuto(program: Program) {
 function isAfterCount(ns: Child[], i: number) {
   for (let j = i - 1; j >= 0; j--) {
     const curr = ns[j];
-    if (j < i - 1 && curr.type === "Control" && curr.value === "\\count")
+    if (j < i - 1 && curr.type === "Control" && curr.value === "\\Count")
       return true;
     if (curr.type !== "Other" || !/^\d+$/.test(curr.value)) return false;
   }
