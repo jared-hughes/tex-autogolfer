@@ -1,10 +1,8 @@
 import { detokenize } from "./emit/detokenize";
 import { emitTokens } from "./emit/emitTokens";
-import { golfAST } from "./golf/golfAST";
-import type { ParseOpts } from "./parse/Parser";
-import type { GolfOpts } from "./golf/golfAST";
-import { parse } from "./parse/Parser";
-import type { Program } from "./types/AST";
+import { golfAST, GolfOpts } from "./golf/golfAST";
+import { ParseOpts, parse } from "./parse/Parser";
+import { Program } from "./types/AST";
 
 export type Opts = ParseOpts & GolfOpts;
 

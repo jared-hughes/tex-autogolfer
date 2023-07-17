@@ -1,4 +1,4 @@
-import type { Control, EmitToken } from "../types/TokenValue";
+import { Control, EmitToken } from "../types/TokenValue";
 
 export function detokenize(tokens: readonly EmitToken[]): string {
   let s = "";

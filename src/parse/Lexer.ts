@@ -1,8 +1,8 @@
 import * as moo from "moo";
 import { DiagnosticsState } from "../types/diagnostics";
-import type { Pos } from "../types/AST";
-import type { TokenValue } from "../types/TokenValue";
-import type { ParseOpts } from "./Parser";
+import { Pos } from "../types/AST";
+import { TokenValue } from "../types/TokenValue";
+import { ParseOpts } from "./Parser";
 
 const rules = {
   comment: { match: /%[^\n]*\n?/, lineBreaks: true },

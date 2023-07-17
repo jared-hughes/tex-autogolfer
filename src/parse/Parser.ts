@@ -1,4 +1,4 @@
-import type {
+import {
   Child,
   Def,
   Group,
@@ -6,9 +6,9 @@ import type {
   Newcount,
   Program,
   Rebind,
+  control,
 } from "../types/AST";
-import { control } from "../types/AST";
-import type { TokenType } from "../types/TokenValue";
+import { TokenType } from "../types/TokenValue";
 import { Lexer } from "./Lexer";
 
 export interface ParseOpts {

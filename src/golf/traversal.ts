@@ -1,5 +1,4 @@
-import { isParent } from "../types/AST";
-import type { Control, Child, Node, Program } from "../types/AST";
+import { isParent, Control, Child, Node, Program } from "../types/AST";
 
 /** A map of a function over all nodes in pre-order traversal order, followed
  * by removal of `undefined` return values. Returns a generator, so is a no-op

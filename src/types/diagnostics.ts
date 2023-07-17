@@ -1,4 +1,4 @@
-import type { Pos } from "./AST";
+import { Pos } from "./AST";
 
 export interface Diagnostic {
   message: string;

@@ -1,5 +1,4 @@
-import { control, isRebind } from "../types/AST";
-import type { Child, Program } from "../types/AST";
+import { control, isRebind, Child, Program } from "../types/AST";
 import { filter, withReplacer } from "./traversal";
 
 export function rebind(program: Program): Program {

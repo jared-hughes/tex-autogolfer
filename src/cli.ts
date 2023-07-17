@@ -4,8 +4,7 @@
 import parseArgs from "minimist";
 import fs from "fs";
 import path from "path";
-import type { Opts } from ".";
-import { golf } from ".";
+import { Opts, golf } from ".";
 
 const options = parseArgs(process.argv.slice(2), {
   boolean: true,

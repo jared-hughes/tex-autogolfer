@@ -1,4 +1,4 @@
-import type { Program } from "../types/AST";
+import { Program } from "../types/AST";
 import { explicitNewcounts } from "./explicitNewcounts";
 import { mapNames } from "./mapNames";
 import { rebind } from "./rebind";

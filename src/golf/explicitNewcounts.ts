@@ -1,5 +1,4 @@
-import type { Child, Node, Other, Program } from "../types/AST";
-import { control, isNewcount } from "../types/AST";
+import { Child, Node, Other, Program, control, isNewcount } from "../types/AST";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
 
 export function explicitNewcounts(program: Program): Program {

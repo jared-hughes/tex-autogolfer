@@ -1,5 +1,4 @@
-import { isBinder, isControl } from "../types/AST";
-import type { Node, Program } from "../types/AST";
+import { isBinder, isControl, Node, Program } from "../types/AST";
 import { filter, unique, withReplacer } from "./traversal";
 
 export function mapNames(program: Program): Program {

@@ -1,5 +1,5 @@
-import type { Child, Program } from "../types/AST";
-import type { EmitToken } from "../types/TokenValue";
+import { Child, Program } from "../types/AST";
+import { EmitToken } from "../types/TokenValue";
 
 export function emitTokens(ast: Program): readonly EmitToken[] {
   return [...emitAll(ast.children)];
