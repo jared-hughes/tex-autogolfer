@@ -11,13 +11,12 @@ Highly-golfed TeX programs are hard to maintain. This tool strives to:
 - ✓ handle transformation of e.g. `\newcount\x`, `\x` to `\count1`
 - ✓ remove whitespace and comments
 
-Use `\rebind\def` if you want to rename all the `\def` to a shorter identifier.
-
 ## Example
 
 Input (71 bytes):
 
 ```tex
+\usegolf{rename}
 \def\double#1{#1#1}
 \def\triple#1{#1#1#1}
 \double a
@@ -31,24 +30,47 @@ Output (36 bytes):
 \def~#1{#1#1}\def\!#1{#1#1#1}~a\!c~b
 ```
 
+## Configuration
+
+Most golfing configuration is on the input files of the form of LaTeX-looking `\usegolf` commands. While `\usegolf` can be specified in any order, golfing transforms are always executed in the same order.
+
+1. `\usegolf{count}`: convert `\newcount` usages to `\count`.
+
+   - Write `⫽` after any counter control sequence that needs a space after it if converted to a `\count`
+     - `⫽` is automatically inserted before any digit preceded by a control sequence
+     - e.g. a macro to mod counter `\d` by a number literal can be written `\def\m#1;{\u\d\divide\u⫽#1\multiply\u⫽#1\advance\d-\u}` and used `\m17;`
+   - Write `⦃ ⦄` around and counter control sequence that needs curly braces around it if convered to a `\count`
+     - e.g. write `\argv⦃\x⦄` so it can be transformed to `\argv{\count1}` instead of `\argv\count1`.
+     - If there is no `\usegolf{count}`, then the curly braces are removed.
+
+1. `\usegolf{rebind<control-seq>}`: really just a convenience
+
+   - For example, `\usegolf{rebind\def}` replaces every `\def` with a `\defRebind` and prepends a `\let\defRebind\def` to the program. This lets `\usegolf{rename}` below rename `\def`
+   - `\usegolf{count}` automatically adds a `\usegolf{rebind\count}`
+
+1. `\usegolf{rename}`: rename identifiers bound with `\let`, `\def`, and `\newcount`
+
+   - The identifiers are renamed by default to identifiers like `\$`. These have the slight advantages (over `\a`) of less often needing spaces after them
+   - The most-common identifier is renamed to `~`, which is the only default active character that works everywhere. Make sure not to use `~` for a space: use `␣` instead.
+   - (Not yet implemented) some way to allow form-feed and other single-byte active characters
+
+There's one more option. If you write `--preserve-newlines` on the command line, then the parser will not delete newlines.
+
 ## Disclaimer
 
 This tool makes no guarantee about preserving program correctness. However, there are some ways you can help the tool ensure it doesn't change program behavior:
 
-- mark required spaces (for typography) as `␣`. These convert to ` ` or `\ ` (if the ` ` would be gobbled)
-- mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` `
-- if the space is only required if the control sequence before it gets converted to end in a number like `\count1`, then write `⫽`
-  - these are automatically inserted before any digit preceded by a control sequence
-  - e.g. a macro to mod counter `\d` by a number literal can be written `\def\m#1;{\u\d\divide\u⫽#1\multiply\u⫽#1\advance\d-\u}` and used `\m17;`
-- don't mess with `\catcode`s
-- don't use multi-byte UTF-8 characters in places that would confuse the tool
+- Mark required spaces (for typography) as `␣`. These convert to ` ` or `\ ` (if the ` ` would be gobbled)
+- Mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` `
+- Don't mess with `\catcode`s
+- Don't use multi-byte UTF-8 characters in places that would confuse the tool
   - TeX doesn't understand multi-byte characters (your code gets broken into bytes), but I decided to preserve them.
-- (I don't think this matters yet) ensure each identifier is only for one purpose (i.e. isn't re-defined)
-- instead of writing `\argv\x`, write `\argv⦃\x⦄` so it can be transformed to `\argv{\count1}` safely if `\count` transform happens, or `\argv\x` otherwise.
+- Ensure each identifier is only for one purpose (i.e. isn't re-defined)
+- More suggestions, such as `\x⫽` and `⦃\x⦄` are listed above in the "Configuration" section.
 
 ## XCompose
 
-Sample `.XCompose` for the funny unicode.
+A sample `.XCompose` for the funny unicode.
 
 ```
 <Multi_key> <space> <space>		: "␣"

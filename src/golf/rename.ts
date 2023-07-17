@@ -1,7 +1,7 @@
 import { isBinder, isControl, Node, Program } from "../types/AST";
 import { filter, unique, withReplacer } from "./traversal";
 
-export function mapNames(program: Program): Program {
+export function rename(program: Program): Program {
   const mapping = pickNameMapping(program);
   return withReplacer(program, (n) => {
     if (n.type !== "Control") return undefined;

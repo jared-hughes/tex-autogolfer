@@ -110,7 +110,7 @@ export class Lexer extends DiagnosticsState {
 
   assertNotEOF(token: Token) {
     if (token.type === "EOF")
-      this.pushFatalError("Unexpected end of file", token);
+      throw this.pushFatalError("Unexpected end of file", token);
   }
 
   pushFatalError(message: string, pos: Pos) {

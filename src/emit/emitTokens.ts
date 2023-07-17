@@ -1,11 +1,11 @@
-import { Child, Program } from "../types/AST";
+import { Child, Node } from "../types/AST";
 import { EmitToken } from "../types/TokenValue";
 
-export function emitTokens(ast: Program): readonly EmitToken[] {
-  return [...emitAll(ast.children)];
+export function emitTokens(node: Node): readonly EmitToken[] {
+  return [...emit(node)];
 }
 
-function* emit(node: Child): Generator<EmitToken, void> {
+function* emit(node: Node): Generator<EmitToken, void> {
   switch (node.type) {
     case "Control":
     case "Other":
@@ -13,6 +13,9 @@ function* emit(node: Child): Generator<EmitToken, void> {
     case "NumSep":
     case "Newline":
       yield node;
+      break;
+    case "Program":
+      yield* emitAll(node.children);
       break;
     case "Group":
       yield { type: "Begin" };
@@ -35,9 +38,6 @@ function* emit(node: Child): Generator<EmitToken, void> {
     case "Newcount":
       yield* emit(node.callee);
       yield* emit(node.binding);
-      break;
-    case "Rebind":
-      // rebind plugin was not applied
       break;
     default:
       node satisfies never;

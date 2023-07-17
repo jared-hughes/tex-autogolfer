@@ -36,8 +36,6 @@ function children(node: Node): Child[] {
       return [node.callee, node.binding, node.rhs];
     case "Newcount":
       return [node.callee, node.binding];
-    case "Rebind":
-      return [node.binding];
     default:
       node satisfies never;
       return [];
@@ -49,7 +47,7 @@ type ChildVisitor = Visitor<Child | Child[] | undefined>;
 export function withReplacer(node: Program, replacer: ChildVisitor): Program {
   const [s, children] = flatMapSomeChanged(node.children, replacer);
   if (!s) return node;
-  return { type: "Program", children };
+  return { ...node, children };
 }
 
 function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
@@ -88,11 +86,6 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
         );
         if (!s) return [node];
         return [{ type: node.type, binding, callee }];
-      }
-      case "Rebind": {
-        const [s, [binding]] = mapSomeChangedControl([node.binding], replacer);
-        if (!s) return [node];
-        return [{ type: node.type, binding }];
       }
     }
     node satisfies never;
@@ -141,6 +134,23 @@ export function unique(s: string[]): string[] {
   return [...new Set(s)];
 }
 
+export function splitCompactMap<T, V>(
+  v: T[],
+  filter: (e: T) => V | undefined
+): { satisfy: V[]; unsatisfy: T[] } {
+  const satisfy = [];
+  const unsatisfy = [];
+  for (const elem of v) {
+    const f = filter(elem);
+    if (f) {
+      satisfy.push(f);
+    } else {
+      unsatisfy.push(elem);
+    }
+  }
+  return { satisfy, unsatisfy };
+}
+
 type ListReplacer = (node: Child[]) => Child[] | undefined;
 
 export function withListReplacer(
@@ -148,7 +158,7 @@ export function withListReplacer(
   replacer: ListReplacer
 ): Program {
   const [_a, c1] = _listReplacerList(node.children, replacer);
-  return { type: "Program", children: replacer(c1) ?? c1 };
+  return { ...node, children: replacer(c1) ?? c1 };
 }
 
 function _listReplacerList(ns: Child[], replacer: ListReplacer) {
@@ -180,4 +190,16 @@ function _withListReplacer(
       return { ...n, params, body };
     }
   }
+}
+
+export function trimStart(ns: Child[], value: string) {
+  if (value.length === 0) return ns;
+  for (let i = 0; i < ns.length; i++) {
+    const n = ns[i];
+    if (n.type !== "Other") return undefined;
+    if (!value.startsWith(n.value)) return undefined;
+    value = value.slice(n.value.length);
+    if (value.length === 0) return ns.slice(i + 1);
+  }
+  return undefined;
 }

@@ -8,6 +8,7 @@ export interface Pos {
 export interface Program {
   type: "Program";
   children: Child[];
+  golfs: Child[][];
 }
 
 export interface Other {
@@ -67,14 +68,9 @@ export interface Newcount {
   binding: Control;
 }
 
-export interface Rebind {
-  type: "Rebind";
-  binding: Control;
-}
-
 export type Leaf = Other | Control | Newline | Space | NumSep;
 
-export type ChildParent = Group | Def | Let | Newcount | Rebind;
+export type ChildParent = Group | Def | Let | Newcount;
 
 export type Child = Leaf | ChildParent;
 
@@ -93,7 +89,6 @@ export function isParent(node: Node): node is Parent {
     case "Def":
     case "Let":
     case "Newcount":
-    case "Rebind":
       node satisfies Parent;
       return true;
     case "Control":
@@ -116,10 +111,6 @@ export function isLet(node: Node): node is Let {
 
 export function isNewcount(node: Node): node is Newcount {
   return node.type === "Newcount";
-}
-
-export function isRebind(node: Node): node is Rebind {
-  return node.type === "Rebind";
 }
 
 export type Binder = Def | Let | Newcount;

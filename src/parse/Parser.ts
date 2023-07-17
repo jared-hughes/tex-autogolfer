@@ -5,7 +5,6 @@ import {
   Let,
   Newcount,
   Program,
-  Rebind,
   control,
 } from "../types/AST";
 import { TokenType } from "../types/TokenValue";
@@ -22,10 +21,13 @@ export function parse(tex: string, opts: ParseOpts): Program {
 }
 
 class Parser extends Lexer {
+  enabledGolfs: Child[][] = [];
+  insideUsegolf = false;
+
   parseProgram(): Program {
     const children = this.parseUntil([]);
     this.consumeType("EOF");
-    return { type: "Program", children };
+    return { type: "Program", children, golfs: this.enabledGolfs };
   }
 
   parseGroup(): Group {
@@ -43,15 +45,16 @@ class Parser extends Lexer {
       const next = this.parseSingle(children.at(-1));
       if (Array.isArray(next)) {
         children.splice(children.length - 1, 1, ...next);
-      } else {
+      } else if (next) {
         children.push(next);
       }
     }
   }
 
-  /** Returning Child means push that child. Returning [Child] means
-   * replace the end of the child list with that child. */
-  parseSingle(prev: Child | undefined): Child | [Child] {
+  /** Returning Child means push that child.
+   * Returning [Child] means replace the end of the child list with that child.
+   * Returning undefined means skip. */
+  parseSingle(prev: Child | undefined): Child | [Child] | undefined {
     const token = this.consume();
     switch (token.type) {
       case "Begin":
@@ -83,14 +86,18 @@ class Parser extends Lexer {
         }
       }
       case "Control":
+        if (this.insideUsegolf) return token;
         if (token.value === "\\def") return this.parseDef();
         if (token.value === "\\let") return this.parseLet();
         if (token.value === "\\newcount") return this.parseNewcount();
-        if (token.value === "\\rebind") return this.parseRebind();
+        if (token.value === "\\usegolf") {
+          this.parseUsegolf();
+          return undefined;
+        }
         return token;
       case "EOF":
         if (!prev) throw this.pushFatalError("Unexpected end of file", token);
-        return [prev];
+        return undefined;
     }
   }
 
@@ -133,9 +140,11 @@ class Parser extends Lexer {
     return { type: "Newcount", callee: control("\\newcount"), binding };
   }
 
-  parseRebind(): Rebind {
-    // Already consumed a "\rebind"
-    const binding = this.consumeType("Control");
-    return { type: "Rebind", binding };
+  parseUsegolf() {
+    // Already consumed a "\usegolf"
+    this.insideUsegolf = true;
+    this.consumeType("Begin");
+    this.enabledGolfs.push(this.parseGroup().children);
+    this.insideUsegolf = false;
   }
 }

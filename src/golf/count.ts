@@ -1,7 +1,7 @@
 import { Child, Node, Other, Program, control, isNewcount } from "../types/AST";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
 
-export function explicitNewcounts(program: Program): Program {
+export function count(program: Program): Program {
   return insertCounts(insertNumSepAuto(program));
 }
 
@@ -37,13 +37,10 @@ function insertCounts(program: Program): Program {
     return n.needsBracesIfCount ? [{ type: "Group", children: g }] : g;
   });
   return {
-    type: "Program",
-    children: [
-      {
-        type: "Rebind",
-        binding: control("\\count"),
-      },
-      ...prog.children,
+    ...prog,
+    golfs: [
+      ...prog.golfs,
+      [{ type: "Other", value: "rebind" }, control("\\count")],
     ],
   };
 }
