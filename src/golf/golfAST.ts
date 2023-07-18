@@ -5,6 +5,7 @@ import { rebind } from "./rebind";
 import { filter, trimStart, withReplacer } from "./traversal";
 import { emitString } from "..";
 import { desugar } from "./desugar";
+import { golfWarning } from "../types/diagnostics";
 
 export const transforms = [
   { name: "desugar", transform: desugar, always: true },
@@ -28,8 +29,9 @@ export function golfAST(program: Program): Program {
   }
   const golfs = [...filter(program, isUsegolf)].map(emitString);
   if (golfs.length > 0) {
-    // eslint-disable-next-line no-console
-    console.error("Warning: unknown golfs:\n" + golfs.join("\n"));
+    golfWarning(
+      "Warning: unknown golfs:\n" + golfs.map((x) => "  " + x).join("\n")
+    );
   }
   return program;
 }

@@ -42,3 +42,13 @@ export function printDiagnostic(input: string, d: Diagnostic) {
   const squiggle = "^" + "~".repeat(b.length > 1 ? b.length - 1 : 0);
   console.error(`  ${" ".repeat(a.length)}${squiggle}`);
 }
+
+/** Not related to the rest of the diagnostics in this file */
+export class GolfError extends Error {}
+export function golfError(msg: string): never {
+  console.error("[error] " + msg);
+  process.exit(1);
+}
+export function golfWarning(msg: string) {
+  console.error("[warn] " + msg);
+}

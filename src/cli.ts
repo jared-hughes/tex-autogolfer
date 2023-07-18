@@ -59,6 +59,5 @@ if (output !== undefined) {
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, code);
 } else {
-  // eslint-disable-next-line no-console
   process.stdout.write(code);
 }

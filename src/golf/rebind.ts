@@ -1,4 +1,5 @@
 import { Child, Program, control } from "../types/AST";
+import { golfError } from "../types/diagnostics";
 import { compactMap, trimStart, withReplacer } from "./traversal";
 
 export function rebind(program: Program): Program {
@@ -31,11 +32,11 @@ export function rebinding(n: Child): string | undefined {
   const t = trimStart(n.children, "rebind");
   if (t === undefined) return undefined;
   if (t.length !== 1)
-    throw new Error(
+    golfError(
       `Expected exactly one identifier after 'rebind' but got ${t.length}`
     );
   const c = t[0];
   if (c.type !== "Control")
-    throw new Error(`Expected Control after 'rebind' but got ${c.type}`);
+    golfError(`Expected Control after 'rebind' but got ${c.type}`);
   return c.value;
 }

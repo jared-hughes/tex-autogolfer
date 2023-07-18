@@ -7,6 +7,7 @@ import {
   isNewcount,
   usegolf,
 } from "../types/AST";
+import { golfError } from "../types/diagnostics";
 import { rebinding } from "./rebind";
 import { renamePair } from "./rename";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
@@ -84,7 +85,7 @@ function pickCountMapping(program: Program) {
 
 function isFreeCounter(i: number) {
   // Leave some room at the top for inserts. This should never be reachable lol.
-  if (i >= 241) throw new Error("Too many counters required.");
+  if (i >= 241) golfError("Too many counters required.");
   return (i >= 1 && i <= 9) || i >= 23;
 }
 

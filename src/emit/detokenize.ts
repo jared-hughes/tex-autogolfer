@@ -1,4 +1,5 @@
 import { Control, EmitToken } from "../types/TokenValue";
+import { golfError } from "../types/diagnostics";
 
 export function detokenize(tokens: readonly EmitToken[]): string {
   let s = "";
@@ -43,5 +44,5 @@ function getVariant(token: Control) {
   if (s.length === 1) return "active";
   if (/^\\[a-zA-Z]+$/.test(s)) return "word";
   if (/^\\.$/.test(s)) return "symb";
-  throw new Error(`Programming error: invalid id ${s}`);
+  golfError(`Invalid id ${s}`);
 }

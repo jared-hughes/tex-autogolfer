@@ -1,5 +1,6 @@
 import { Child, isBinder, isControl, isLet, Node, Program } from "../types/AST";
 import { Control } from "../types/TokenValue";
+import { golfError } from "../types/diagnostics";
 import {
   compactMap,
   filter,
@@ -12,7 +13,7 @@ export function rename(program: Program): Program {
   const _forcedRenames = [...compactMap(program, renamePair)];
   const forcedRenames = new Map(_forcedRenames);
   if (forcedRenames.size < _forcedRenames.length)
-    throw new Error("Duplicate \\usegolf{\\rename<id1><id2>}");
+    golfError("Duplicate \\usegolf{\\rename<id1><id2>}");
   const mapping = pickNameMapping(program, forcedRenames);
   return withReplacer(program, (n) => {
     if (renamePair(n) !== undefined) return [];
@@ -28,12 +29,12 @@ export function renamePair(n: Child): [string, string] | undefined {
   const t = trimStart(n.children, "rename");
   if (t === undefined || t.length === 0) return undefined;
   if (t.length !== 2)
-    throw new Error(
+    golfError(
       `Expected exactly two identifiers after 'rename' but got ${t.length}`
     );
   const bad = t.filter((c) => c.type !== "Control");
   if (bad.length > 0)
-    throw new Error(`Expected Control after 'rename' but got ${bad[0].type}`);
+    golfError(`Expected Control after 'rename' but got ${bad[0].type}`);
   return (t as Control[]).map((c) => c.value) as [string, string];
 }
 
@@ -47,7 +48,7 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
       if (free.includes(k)) return [k, v];
       const vv = lets.filter((x) => x.rhs.value === k);
       if (vv.length === 0)
-        throw new Error(`Cannot find binding for \\usegolf{\\rename${k}...}`);
+        golfError(`Cannot find binding for \\usegolf{\\rename${k}...}`);
       return [vv[0].binding.value, v];
     })
   );
@@ -67,7 +68,7 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
       }
       ++i;
     }
-    throw new Error("Too many IDs");
+    golfError("Too many IDs");
   }
   for (const name of freefree) {
     mapping.set(name, nextID());

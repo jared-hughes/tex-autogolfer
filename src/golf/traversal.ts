@@ -1,4 +1,5 @@
 import { isParent, Control, Child, Node, Program } from "../types/AST";
+import { golfError } from "../types/diagnostics";
 
 /** A map of a function over all nodes in pre-order traversal order, followed
  * by removal of `undefined` return values. Returns a generator, so is a no-op
@@ -113,9 +114,7 @@ function mapSomeChanged(arr: Child[], replacer: ChildVisitor) {
   const replaced = arr.map((c) => {
     const d = _withReplacer(c, replacer);
     if (d.length !== 1)
-      throw new Error(
-        `Can only replace this with one node, but got ${d.length}.`
-      );
+      golfError(`Can only replace this with one node, but got ${d.length}.`);
     if (d[0] !== c) someChanged = true;
     return d[0];
   });
@@ -125,8 +124,7 @@ function mapSomeChanged(arr: Child[], replacer: ChildVisitor) {
 function mapSomeChangedControl(arr: Control[], replacer: ChildVisitor) {
   const [s, v] = mapSomeChanged(arr, replacer);
   const v2 = v.map((x) => {
-    if (x.type !== "Control")
-      throw new Error("Replaced Control with non-Control");
+    if (x.type !== "Control") golfError("Replaced Control with non-Control");
     return x;
   });
   return [s, v2] as const;
