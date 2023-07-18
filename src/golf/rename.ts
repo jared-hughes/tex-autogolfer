@@ -29,11 +29,11 @@ function renamings(n: Child): [string, string] | undefined {
   if (t === undefined) return undefined;
   if (t.length !== 2)
     throw new Error(
-      `Expected exactly two identifiers after 'rebind' but got ${t.length}`
+      `Expected exactly two identifiers after 'rename' but got ${t.length}`
     );
   const bad = t.filter((c) => c.type !== "Control");
   if (bad.length > 0)
-    throw new Error(`Expected Control after 'rebind' but got ${bad[0].type}`);
+    throw new Error(`Expected Control after 'rename' but got ${bad[0].type}`);
   return (t as Control[]).map((c) => c.value) as [string, string];
 }
 

@@ -139,3 +139,7 @@ export function usegolf(children: Child[]): Usegolf {
 export function isUsegolf(n: Child): n is Usegolf {
   return n.type === "Usegolf";
 }
+
+export function other(value: string): Other {
+  return { type: "Other", value };
+}
