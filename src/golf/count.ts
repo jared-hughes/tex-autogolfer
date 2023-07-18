@@ -1,4 +1,12 @@
-import { Child, Node, Other, Program, control, isNewcount } from "../types/AST";
+import {
+  Child,
+  Node,
+  Other,
+  Program,
+  control,
+  isNewcount,
+  usegolf,
+} from "../types/AST";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
 
 export function count(program: Program): Program {
@@ -38,9 +46,9 @@ function insertCounts(program: Program): Program {
   });
   return {
     ...prog,
-    golfs: [
-      ...prog.golfs,
-      [{ type: "Other", value: "rebind" }, control("\\count")],
+    children: [
+      usegolf([{ type: "Other", value: "rebind" }, control("\\count")]),
+      ...prog.children,
     ],
   };
 }

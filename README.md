@@ -45,8 +45,9 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
 
 1. `\usegolf{rebind<control-seq>}`: really just a convenience
 
-   - For example, `\usegolf{rebind\def}` replaces every `\def` with a `\defRebind` and prepends a `\let\defRebind\def` to the program. This lets `\usegolf{rename}` below rename `\def`
-   - `\usegolf{count}` automatically adds a `\usegolf{rebind\count}`
+   - For example, `\usegolf{rebind\def}` replaces every `\def` with a `\defRebind` and puts a `\let\defRebind\def` to the program. This lets `\usegolf{rename}` below rename `\def`
+   - `\usegolf{count}` automatically adds a `\usegolf{rebind\count}` at the top of the file
+   - The `\let` is placed at the position of the `\usegolf`, so writing `\usegolf{rebind\newcount~}\newcount\x\usegolf{rebind\advance~}\advance\x1` will work.
 
 1. `\usegolf{rename}`: rename identifiers bound with `\let`, `\def`, and `\newcount`
 

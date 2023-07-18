@@ -29,6 +29,7 @@ function children(node: Node): Child[] {
   switch (node.type) {
     case "Program":
     case "Group":
+    case "Usegolf":
       return node.children;
     case "Def":
       return [node.callee, node.binding, ...node.params, ...node.body];
@@ -56,10 +57,11 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
     if (!isParent(node)) return [node];
     // recurse on children
     switch (node.type) {
-      case "Group": {
+      case "Group":
+      case "Usegolf": {
         const [s, children] = flatMapSomeChanged(node.children, replacer);
         if (!s) return [node];
-        return [{ type: "Group", children }];
+        return [{ type: node.type, children }];
       }
       case "Def": {
         const [s1, [callee, binding]] = mapSomeChangedControl(
@@ -132,23 +134,6 @@ function mapSomeChangedControl(arr: Control[], replacer: ChildVisitor) {
 
 export function unique(s: string[]): string[] {
   return [...new Set(s)];
-}
-
-export function splitCompactMap<T, V>(
-  v: T[],
-  filter: (e: T) => V | undefined
-): { satisfy: V[]; unsatisfy: T[] } {
-  const satisfy = [];
-  const unsatisfy = [];
-  for (const elem of v) {
-    const f = filter(elem);
-    if (f) {
-      satisfy.push(f);
-    } else {
-      unsatisfy.push(elem);
-    }
-  }
-  return { satisfy, unsatisfy };
 }
 
 type ListReplacer = (node: Child[]) => Child[] | undefined;

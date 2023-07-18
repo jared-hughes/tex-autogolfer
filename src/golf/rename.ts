@@ -1,42 +1,40 @@
-import { isBinder, isControl, isLet, Node, Program } from "../types/AST";
+import { Child, isBinder, isControl, isLet, Node, Program } from "../types/AST";
 import { Control } from "../types/TokenValue";
 import {
+  compactMap,
   filter,
-  splitCompactMap,
   trimStart,
   unique,
   withReplacer,
 } from "./traversal";
 
 export function rename(program: Program): Program {
-  const { satisfy: _forcedRenames, unsatisfy: golfs } = splitCompactMap(
-    program.golfs,
-    (g) => {
-      const t = trimStart(g, "rename");
-      if (t === undefined) return undefined;
-      if (t.length !== 2)
-        throw new Error(
-          `Expected exactly two identifiers after 'rebind' but got ${t.length}`
-        );
-      const bad = t.filter((c) => c.type !== "Control");
-      if (bad.length > 0)
-        throw new Error(
-          `Expected Control after 'rebind' but got ${bad[0].type}`
-        );
-      return (t as Control[]).map((c) => c.value) as [string, string];
-    }
-  );
+  const _forcedRenames = [...compactMap(program, renamings)];
   const forcedRenames = new Map(_forcedRenames);
   if (forcedRenames.size < _forcedRenames.length)
     throw new Error("Duplicate \\usegolf{\\rename<id1><id2>}");
   const mapping = pickNameMapping(program, forcedRenames);
-  const prog = withReplacer(program, (n) => {
+  return withReplacer(program, (n) => {
+    if (renamings(n) !== undefined) return [];
     if (n.type !== "Control") return undefined;
     const value = mapping.get(n.value);
     if (value === undefined) return undefined;
     return { ...n, value };
   });
-  return { ...prog, golfs };
+}
+
+function renamings(n: Child): [string, string] | undefined {
+  if (n.type !== "Usegolf") return undefined;
+  const t = trimStart(n.children, "rename");
+  if (t === undefined) return undefined;
+  if (t.length !== 2)
+    throw new Error(
+      `Expected exactly two identifiers after 'rebind' but got ${t.length}`
+    );
+  const bad = t.filter((c) => c.type !== "Control");
+  if (bad.length > 0)
+    throw new Error(`Expected Control after 'rebind' but got ${bad[0].type}`);
+  return (t as Control[]).map((c) => c.value) as [string, string];
 }
 
 function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {

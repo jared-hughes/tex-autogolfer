@@ -1,8 +1,8 @@
-import { Program } from "../types/AST";
+import { Program, isUsegolf } from "../types/AST";
 import { count } from "./count";
 import { rename } from "./rename";
 import { rebind } from "./rebind";
-import { splitCompactMap, trimStart } from "./traversal";
+import { filter, trimStart, withReplacer } from "./traversal";
 import { emitString } from "..";
 
 export const transforms = [
@@ -13,25 +13,21 @@ export const transforms = [
 
 export function golfAST(program: Program): Program {
   for (const { name, transform, always } of transforms) {
-    const { satisfy, unsatisfy } = splitCompactMap(
-      program.golfs,
-      (v) => trimStart(v, name)?.length === 0
-    );
-    if (satisfy.length > 0 || always) {
-      program = transform({ ...program, golfs: unsatisfy });
+    let satisfy = false;
+    program = withReplacer(program, (n) => {
+      if (n.type === "Usegolf" && trimStart(n.children, name)?.length === 0) {
+        satisfy = true;
+        return [];
+      }
+    });
+    if (satisfy || always) {
+      program = transform(program);
     }
   }
-  if (program.golfs.length > 0) {
+  const golfs = [...filter(program, isUsegolf)].map(emitString);
+  if (golfs.length > 0) {
     // eslint-disable-next-line no-console
-    console.error(
-      "Warning: unknown golfs:\n" +
-        program.golfs
-          .map(
-            (children) =>
-              "  \\usegolf" + emitString({ type: "Group", children })
-          )
-          .join("\n")
-    );
+    console.error("Warning: unknown golfs:\n" + golfs.join("\n"));
   }
   return program;
 }

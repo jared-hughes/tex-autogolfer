@@ -8,7 +8,6 @@ export interface Pos {
 export interface Program {
   type: "Program";
   children: Child[];
-  golfs: Child[][];
 }
 
 export interface Other {
@@ -47,6 +46,11 @@ export interface Group {
   children: Child[];
 }
 
+export interface Usegolf {
+  type: "Usegolf";
+  children: Child[];
+}
+
 export interface Def {
   type: "Def";
   callee: Control;
@@ -70,7 +74,7 @@ export interface Newcount {
 
 export type Leaf = Other | Control | Newline | Space | NumSep;
 
-export type ChildParent = Group | Def | Let | Newcount;
+export type ChildParent = Group | Def | Let | Newcount | Usegolf;
 
 export type Child = Leaf | ChildParent;
 
@@ -89,6 +93,7 @@ export function isParent(node: Node): node is Parent {
     case "Def":
     case "Let":
     case "Newcount":
+    case "Usegolf":
       node satisfies Parent;
       return true;
     case "Control":
@@ -125,4 +130,12 @@ export function isControl(node: Node): node is Control {
 
 export function control(value: string): Control {
   return { type: "Control", value };
+}
+
+export function usegolf(children: Child[]): Usegolf {
+  return { type: "Usegolf", children };
+}
+
+export function isUsegolf(n: Child): n is Usegolf {
+  return n.type === "Usegolf";
 }

@@ -18,17 +18,17 @@ function* emit(node: Node): Generator<EmitToken, void> {
       yield* emitAll(node.children);
       break;
     case "Group":
-      yield { type: "Begin" };
-      yield* emitAll(node.children);
-      yield { type: "End" };
+      yield* emitGroup(node.children);
+      break;
+    case "Usegolf":
+      yield { type: "Control", value: "\\usegolf" };
+      yield* emitGroup(node.children);
       break;
     case "Def":
       yield* emit(node.callee);
       yield* emit(node.binding);
       yield* emitAll(node.params);
-      yield { type: "Begin" };
-      yield* emitAll(node.body);
-      yield { type: "End" };
+      yield* emitGroup(node.body);
       break;
     case "Let":
       yield* emit(node.callee);
@@ -46,4 +46,10 @@ function* emit(node: Node): Generator<EmitToken, void> {
 
 function* emitAll(nodes: Child[]): Generator<EmitToken, void> {
   for (const child of nodes) yield* emit(child);
+}
+
+function* emitGroup(nodes: Child[]): Generator<EmitToken, void> {
+  yield { type: "Begin" };
+  yield* emitAll(nodes);
+  yield { type: "End" };
 }

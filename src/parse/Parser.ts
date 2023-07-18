@@ -5,6 +5,7 @@ import {
   Let,
   Newcount,
   Program,
+  Usegolf,
   control,
 } from "../types/AST";
 import { TokenType } from "../types/TokenValue";
@@ -21,13 +22,12 @@ export function parse(tex: string, opts: ParseOpts): Program {
 }
 
 class Parser extends Lexer {
-  enabledGolfs: Child[][] = [];
   insideUsegolf = false;
 
   parseProgram(): Program {
     const children = this.parseUntil([]);
     this.consumeType("EOF");
-    return { type: "Program", children, golfs: this.enabledGolfs };
+    return { type: "Program", children };
   }
 
   parseGroup(): Group {
@@ -90,10 +90,7 @@ class Parser extends Lexer {
         if (token.value === "\\def") return this.parseDef();
         if (token.value === "\\let") return this.parseLet();
         if (token.value === "\\newcount") return this.parseNewcount();
-        if (token.value === "\\usegolf") {
-          this.parseUsegolf();
-          return undefined;
-        }
+        if (token.value === "\\usegolf") return this.parseUsegolf();
         return token;
       case "EOF":
         if (!prev) throw this.pushFatalError("Unexpected end of file", token);
@@ -140,11 +137,12 @@ class Parser extends Lexer {
     return { type: "Newcount", callee: control("\\newcount"), binding };
   }
 
-  parseUsegolf() {
+  parseUsegolf(): Usegolf {
     // Already consumed a "\usegolf"
-    this.insideUsegolf = true;
     this.consumeType("Begin");
-    this.enabledGolfs.push(this.parseGroup().children);
+    this.insideUsegolf = true;
+    const children = this.parseGroup().children;
     this.insideUsegolf = false;
+    return { type: "Usegolf", children };
   }
 }
