@@ -1,6 +1,6 @@
 import { Child, isBinder, isControl, isLet, Node, Program } from "../types/AST";
 import { Control } from "../types/TokenValue";
-import { golfError } from "../types/diagnostics";
+import { golfError, golfWarning } from "../types/diagnostics";
 import {
   compactMap,
   filter,
@@ -66,6 +66,7 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
   let i = -1;
   function nextID() {
     while (i < ids.length) {
+      if (ids[i] === "a") golfWarning("Many IDs");
       const opt = i === -1 ? "~" : "\\" + ids[i];
       if (![...mapping.values()].includes(opt)) {
         return opt;
@@ -81,7 +82,8 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
 }
 
 // Incomplete. TODO. Can we use any (even non-printable) symbols?
-const ids = "!@#$%^&*()_+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+// Can't use \+, idk why.
+const ids = "!@#$%^&*()_-=[]{}|;:'\"<>,.?/abcdefghijklmnopqrstuvwxyz";
 
 function getNameCounts(program: Node) {
   const counts = new Map<string, number>();
