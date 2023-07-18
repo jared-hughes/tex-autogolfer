@@ -43,15 +43,19 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
   // Except whatever is most frequent becomes tilde
   const free = renameable(program);
   const lets = [...filter(program, isLet)];
-  const mapping = new Map(
-    [...forcedRenames].map(([k, v]) => {
+  const unfree = [...filter(program, isControl)]
+    .map((x) => x.value)
+    .filter((v) => !free.includes(v));
+  const mapping = new Map([
+    ...[...forcedRenames].map(([k, v]): [string, string] => {
       if (free.includes(k)) return [k, v];
       const vv = lets.filter((x) => x.rhs.value === k);
       if (vv.length === 0)
         golfError(`Cannot find binding for \\usegolf{\\rename${k}...}`);
       return [vv[0].binding.value, v];
-    })
-  );
+    }),
+    ...unfree.map((v): [string, string] => [v, v]),
+  ]);
   const counts = new Map(
     [...getNameCounts(program)].filter(([id]) => free.includes(id))
   );
