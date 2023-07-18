@@ -7,9 +7,17 @@ import {
   isNewcount,
   usegolf,
 } from "../types/AST";
+import { rebinding } from "./rebind";
+import { renamePair } from "./rename";
 import { filter, unique, withListReplacer, withReplacer } from "./traversal";
 
 export function count(program: Program): Program {
+  program = withReplacer(program, (n): Child[] | undefined => {
+    // remove \usegolf{rebind\newcount}
+    if (rebinding(n) === "\\newcount") return [];
+    // remove \usegolf{rename\newcount\x}
+    if (renamePair(n)?.[0] === "\\newcount") return [];
+  });
   return insertCounts(insertNumSepAuto(program));
 }
 
@@ -31,7 +39,7 @@ function insertNumSepAuto(program: Program) {
 
 function insertCounts(program: Program): Program {
   const mapping = pickCountMapping(program);
-  const prog = withReplacer(program, (n): Child[] | undefined => {
+  program = withReplacer(program, (n): Child[] | undefined => {
     // Remove \newcount\x and replace \x with \count1
     if (n.type === "Newcount") return [];
     if (n.type !== "Control") return undefined;
@@ -45,10 +53,10 @@ function insertCounts(program: Program): Program {
     return n.needsBracesIfCount ? [{ type: "Group", children: g }] : g;
   });
   return {
-    ...prog,
+    ...program,
     children: [
       usegolf([{ type: "Other", value: "rebind" }, control("\\count")]),
-      ...prog.children,
+      ...program.children,
     ],
   };
 }

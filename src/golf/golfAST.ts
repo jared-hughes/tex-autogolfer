@@ -4,8 +4,10 @@ import { rename } from "./rename";
 import { rebind } from "./rebind";
 import { filter, trimStart, withReplacer } from "./traversal";
 import { emitString } from "..";
+import { desugar } from "./desugar";
 
 export const transforms = [
+  { name: "desugar", transform: desugar, always: true },
   { name: "count", transform: count },
   { name: "rebind", transform: rebind, always: true },
   { name: "rename", transform: rename },

@@ -9,13 +9,13 @@ import {
 } from "./traversal";
 
 export function rename(program: Program): Program {
-  const _forcedRenames = [...compactMap(program, renamings)];
+  const _forcedRenames = [...compactMap(program, renamePair)];
   const forcedRenames = new Map(_forcedRenames);
   if (forcedRenames.size < _forcedRenames.length)
     throw new Error("Duplicate \\usegolf{\\rename<id1><id2>}");
   const mapping = pickNameMapping(program, forcedRenames);
   return withReplacer(program, (n) => {
-    if (renamings(n) !== undefined) return [];
+    if (renamePair(n) !== undefined) return [];
     if (n.type !== "Control") return undefined;
     const value = mapping.get(n.value);
     if (value === undefined) return undefined;
@@ -23,10 +23,10 @@ export function rename(program: Program): Program {
   });
 }
 
-function renamings(n: Child): [string, string] | undefined {
+export function renamePair(n: Child): [string, string] | undefined {
   if (n.type !== "Usegolf") return undefined;
   const t = trimStart(n.children, "rename");
-  if (t === undefined) return undefined;
+  if (t === undefined || t.length === 0) return undefined;
   if (t.length !== 2)
     throw new Error(
       `Expected exactly two identifiers after 'rename' but got ${t.length}`
