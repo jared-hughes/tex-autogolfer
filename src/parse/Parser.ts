@@ -8,7 +8,7 @@ import {
   Usegolf,
   control,
 } from "../types/AST";
-import { TokenType } from "../types/TokenValue";
+import { Control, TokenType } from "../types/TokenValue";
 import { Lexer } from "./Lexer";
 
 export interface ParseOpts {
@@ -87,7 +87,8 @@ class Parser extends Lexer {
       }
       case "Control":
         if (this.insideUsegolf) return token;
-        if (token.value === "\\def") return this.parseDef();
+        if (["\\def", "\\edef", "\\gdef", "\\xdef"].includes(token.value))
+          return this.parseDef(token);
         if (token.value === "\\let") return this.parseLet();
         if (token.value === "\\newcount") return this.parseNewcount();
         if (token.value === "\\usegolf") return this.parseUsegolf();
@@ -108,7 +109,7 @@ class Parser extends Lexer {
     };
   }
 
-  parseDef(): Def {
+  parseDef(token: Control): Def {
     // Already consumed a "\def"
     const name = this.consumeType("Control");
     const params = this.parseUntil(["Begin", "End"]);
@@ -117,7 +118,7 @@ class Parser extends Lexer {
     this.consumeType("End");
     return {
       type: "Def",
-      callee: control("\\def"),
+      callee: token,
       binding: name,
       params,
       body,
