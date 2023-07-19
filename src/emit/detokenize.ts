@@ -4,11 +4,27 @@ import { golfError } from "../types/diagnostics";
 export function detokenize(tokens: readonly EmitToken[]): string {
   let s = "";
   let prev: EmitToken | undefined;
+  tokens = mergeNumSepSpace(tokens);
   for (const token of tokens) {
     s += value(token, prev);
     prev = token;
   }
   return s;
+}
+
+// Replace `⫽⫽␣` with `\ `
+function mergeNumSepSpace(tokens: readonly EmitToken[]) {
+  const out: EmitToken[] = [];
+  for (let i = 0; i < tokens.length; ) {
+    if (tokens[i].type === "NumSep" && tokens[i + 1]?.type === "Space") {
+      out.push({ type: "Control", value: "\\ " });
+      i += 2;
+    } else {
+      out.push(tokens[i]);
+      i++;
+    }
+  }
+  return out;
 }
 
 function value(token: EmitToken, prev: EmitToken | undefined): string {
