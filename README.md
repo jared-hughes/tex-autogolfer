@@ -60,7 +60,9 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
    - E.g. `\usegolf{rename\def\D}` renames `\def` to `\D` instead of whatever arbitrarily chosen identifier like `\$`.
    - Has no effect if `\usegolf{rename}` is not provided
      - (for forwards compatibility with a future decision of either enabling renaming everything, or just renaming that one thing)
-   - Note that formfeed `` (0x0C) is an active character, but only works in some contexts, so it's not automatically chosen. You can use it like `\usegolf{rename\def}`.
+   - Note that formfeed `` (0x0C) is an active character, but only works in some contexts, so it's not automatically chosen. You can use it like `\usegolf{rename\def}`
+   - Write `\usegolf{rename-add\name}` if you want to prioritize consideration of that control sequence. For example, if you change `$` to be an active character (``\catcode`$=13``), then write `\usegolf{rename-add$}`
+   - If you change `%` to be an active character, then write `\usegolf{rename-add\char37}` (since `%` is byte 37). Same applies to any other single byte, but if it's not a special character, you can also write the name directly.
 
 There's one more option. If you write `--preserve-newlines` on the command line, then the parser will not delete newlines.
 

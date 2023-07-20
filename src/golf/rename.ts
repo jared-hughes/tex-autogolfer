@@ -1,5 +1,13 @@
-import { Child, isBinder, isControl, isLet, Node, Program } from "../types/AST";
-import { Control } from "../types/TokenValue";
+import {
+  Child,
+  isBinder,
+  isControl,
+  isLet,
+  Node,
+  Program,
+  Control,
+  Other,
+} from "../types/AST";
 import { golfError, golfWarning } from "../types/diagnostics";
 import {
   compactMap,
@@ -10,11 +18,18 @@ import {
 } from "./traversal";
 
 export function rename(program: Program): Program {
+  const extraNames: string[] = [];
+  program = withReplacer(program, (n) => {
+    const extra = extraName(n);
+    if (extra === undefined) return undefined;
+    extraNames.push(extra);
+    return [];
+  });
   const _forcedRenames = [...compactMap(program, renamePair)];
   const forcedRenames = new Map(_forcedRenames);
   if (forcedRenames.size < _forcedRenames.length)
     golfError("Duplicate \\usegolf{\\rename<id1><id2>}");
-  const mapping = pickNameMapping(program, forcedRenames);
+  const mapping = pickNameMapping(program, forcedRenames, extraNames);
   return withReplacer(program, (n) => {
     if (renamePair(n) !== undefined) return [];
     if (n.type !== "Control") return undefined;
@@ -22,6 +37,28 @@ export function rename(program: Program): Program {
     if (value === undefined) return undefined;
     return { ...n, value };
   });
+}
+
+function extraName(n: Child): string | undefined {
+  if (n.type !== "Usegolf") return undefined;
+  const t = trimStart(n.children, "rename-add");
+  if (t === undefined) return undefined;
+  if (t[0].type === "Control" && t[0].value === "\\char") {
+    const int = parseInt(
+      t
+        .slice(1)
+        .filter((n): n is Other => {
+          if (n.type !== "Other")
+            golfWarning(`That's not a digit after \\char...`);
+          return n.type === "Other";
+        })
+        .map((x) => x.value)
+        .join("")
+    );
+    return String.fromCharCode(int);
+  } else if (t.length === 1 && t[0].type === "Other") {
+    return t[0].value;
+  }
 }
 
 export function renamePair(n: Child): [string, string] | undefined {
@@ -38,7 +75,11 @@ export function renamePair(n: Child): [string, string] | undefined {
   return (t as Control[]).map((c) => c.value) as [string, string];
 }
 
-function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
+function pickNameMapping(
+  program: Program,
+  forcedRenames: Map<string, string>,
+  extraNames: string[]
+) {
   // Reduce everything to backslash + one letter
   // Except whatever is most frequent becomes tilde
   const free = renameable(program);
@@ -63,11 +104,12 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
   const freefree = free
     .filter((x) => !mapping.has(x))
     .sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0));
-  let i = -1;
+  const ids = ["~", ...extraNames].concat([...easyIDs].map((t) => "\\" + t));
+  let i = 0;
   function nextID() {
     while (i < ids.length) {
-      if (ids[i] === "a") golfWarning("Many IDs");
-      const opt = i === -1 ? "~" : "\\" + ids[i];
+      const opt = ids[i];
+      if (opt === "a") golfWarning("Many IDs");
       if (![...mapping.values()].includes(opt)) {
         return opt;
       }
@@ -84,7 +126,7 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
 // Incomplete. TODO. Can we use any (even non-printable) symbols?
 // Can't use \+, idk why.
 // [ and ( at end since \[ and \( screw with syntax highlighting.
-const ids = "!@#$%^&*)_-=]{}|;:'\"<>,.?/[(abcdefghijklmnopqrstuvwxyz";
+const easyIDs = "!@#$%^&*)_-=]{}|;:'\"<>,.?/[(abcdefghijklmnopqrstuvwxyz";
 
 function getNameCounts(program: Node) {
   const counts = new Map<string, number>();
