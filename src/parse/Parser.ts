@@ -23,6 +23,7 @@ export function parse(tex: string, opts: ParseOpts): Program {
 
 class Parser extends Lexer {
   insideUsegolf = false;
+  afterExpandafter = false;
 
   parseProgram(): Program {
     const children = this.parseUntil([]);
@@ -87,11 +88,18 @@ class Parser extends Lexer {
       }
       case "Control":
         if (this.insideUsegolf) return token;
-        if (["\\def", "\\edef", "\\gdef", "\\xdef"].includes(token.value))
+        if (
+          !this.afterExpandafter &&
+          ["\\def", "\\edef", "\\gdef", "\\xdef"].includes(token.value)
+        )
           return this.parseDef(token);
         if (token.value === "\\let") return this.parseLet();
         if (token.value === "\\newcount") return this.parseNewcount();
         if (token.value === "\\usegolf") return this.parseUsegolf();
+        if (token.value === "\\expandafter") {
+          this.afterExpandafter = true;
+          return token;
+        }
         return token;
       case "EOF":
         if (!prev) throw this.pushFatalError("Unexpected end of file", token);
