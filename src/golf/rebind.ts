@@ -19,7 +19,7 @@ export function rebind(program: Program): Program {
     if (!rebound) return undefined;
     return {
       type: "Let",
-      callee: control(rebindings.get("\\let") ?? "\\let"),
+      callee: control("\\let"),
       binding: control(rebound),
       rhs: control(re),
     };
