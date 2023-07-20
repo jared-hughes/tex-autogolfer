@@ -83,7 +83,8 @@ function pickNameMapping(program: Program, forcedRenames: Map<string, string>) {
 
 // Incomplete. TODO. Can we use any (even non-printable) symbols?
 // Can't use \+, idk why.
-const ids = "!@#$%^&*()_-=[]{}|;:'\"<>,.?/abcdefghijklmnopqrstuvwxyz";
+// [ and ( at end since \[ and \( screw with syntax highlighting.
+const ids = "!@#$%^&*)_-=]{}|;:'\"<>,.?/[(abcdefghijklmnopqrstuvwxyz";
 
 function getNameCounts(program: Node) {
   const counts = new Map<string, number>();
