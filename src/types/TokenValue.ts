@@ -1,6 +1,7 @@
 export interface Control {
   type: "Control";
   value: string;
+  afterExpandafter?: boolean;
 }
 
 export interface Newline {

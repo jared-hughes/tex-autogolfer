@@ -65,7 +65,11 @@ export class Lexer extends DiagnosticsState {
           to: prev ? prev.offset + prev.text.length : 0,
           text: "",
         };
-      const value = tokenValue(t, this.opts);
+      const value = tokenValue(t, this.opts, {
+        afterExpandafter:
+          this.prevToken?.type === "symb_control" &&
+          this.prevToken.value === "\\expandafter",
+      });
       if (value !== undefined)
         return {
           ...value,
@@ -119,7 +123,11 @@ export class Lexer extends DiagnosticsState {
   }
 }
 
-function tokenValue(t: RawToken, opts: ParseOpts): TokenValue | undefined {
+function tokenValue(
+  t: RawToken,
+  opts: ParseOpts,
+  { afterExpandafter }: { afterExpandafter: boolean }
+): TokenValue | undefined {
   switch (t.type) {
     case "comment":
     case "space":
@@ -129,7 +137,7 @@ function tokenValue(t: RawToken, opts: ParseOpts): TokenValue | undefined {
     case "word_control":
     case "symb_control":
     case "active":
-      return { type: "Control", value: t.value };
+      return { type: "Control", value: t.value, afterExpandafter };
     case "begin":
       return { type: "Begin" };
     case "end":
