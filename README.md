@@ -72,9 +72,10 @@ There's one more option. If you write `--preserve-newlines` on the command line,
 
 This tool makes no guarantee about preserving program correctness. However, there are some ways you can help the tool ensure it doesn't change program behavior:
 
-- Mark required spaces (for typography) as `␣`. These convert to ` ` or `\ ` (if the ` ` would be gobbled)
-- Mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` `
-- Don't mess with `\catcode`s
+- Mark required spaces (for typography) as `␣`. These convert to ` ` (or `\ ` if the ` ` would be gobbled)
+- Mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` ` (or `{}` if the ` ` would be gobbled)
+- Mark required spaces (for `\catcode32=12`) as `…`. These convert to ` ` unconditionally
+- Messing with `\catcode`s is risky.
 - Don't use multi-byte UTF-8 characters in places that would confuse the tool
   - TeX doesn't understand multi-byte characters (your code gets broken into bytes), but I decided to preserve them.
 - Ensure each identifier is only for one purpose (i.e. isn't re-defined)

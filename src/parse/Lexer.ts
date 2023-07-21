@@ -15,6 +15,7 @@ const rules = {
   end_auto: /⦄/,
   newline: { match: /\n(?:\s*\n)+/, lineBreaks: true },
   forced_output_space: /␣/,
+  forced_source_space: /…/,
   num_sep_hint: /⫽+/,
   solo_newline: { match: /\n/, lineBreaks: true },
   space: / +/,
@@ -136,6 +137,8 @@ function tokenValue(
     case "comment":
     case "space":
       return undefined;
+    case "forced_source_space":
+      return { type: "Other", value: " " };
     case "solo_newline":
       return opts.preserveNewlines ? { type: "Other", value: "\n" } : undefined;
     case "word_control":
