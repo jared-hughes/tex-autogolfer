@@ -41,6 +41,10 @@ export class Lexer extends DiagnosticsState {
     input: string,
     public opts: ParseOpts
   ) {
+    input = input.replace(/⦃\d+⦄/g, (s: string) => {
+      const t = String.fromCodePoint(parseInt(s.slice(1, -1)));
+      return t + " ".repeat(Math.max(s.length - t.length, 0));
+    });
     super(input);
     this.lexer = moo.compile(rules);
     this.lexer.reset(input);
