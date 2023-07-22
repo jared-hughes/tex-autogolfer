@@ -105,15 +105,10 @@ export class Lexer extends DiagnosticsState {
   }
 
   consumeType<T extends TokenValue["type"]>(expected: T) {
-    while (true) {
-      const c = this._consume();
-      if (expected !== "EOF") this.assertNotEOF(c);
-      if (expected === c.type) return c as Token & { type: T };
-      this.pushError(
-        `Expected ${expected} but got '${c.text}'. Skipping it.`,
-        c
-      );
-    }
+    const c = this._consume();
+    if (expected !== "EOF") this.assertNotEOF(c);
+    if (expected === c.type) return c as Token & { type: T };
+    throw this.pushFatalError(`Expected ${expected} but got '${c.text}'.`, c);
   }
 
   assertNotEOF(token: Token) {
