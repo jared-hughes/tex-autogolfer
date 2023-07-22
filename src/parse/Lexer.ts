@@ -42,7 +42,7 @@ export class Lexer extends DiagnosticsState {
     input: string,
     public opts: ParseOpts
   ) {
-    input = input.replace(/⦃\d+⦄/g, (s: string) => {
+    input = input.replace(/⦃(?:0x[0-9A-Za-z]+|\d+)⦄/g, (s: string) => {
       const t = String.fromCodePoint(parseInt(s.slice(1, -1)));
       return t + " ".repeat(Math.max(s.length - t.length, 0));
     });
