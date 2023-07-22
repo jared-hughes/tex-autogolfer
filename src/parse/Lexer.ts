@@ -72,8 +72,7 @@ export class Lexer extends DiagnosticsState {
         };
       const value = tokenValue(t, this.opts, {
         afterExpandafter:
-          this.prevToken?.type === "symb_control" &&
-          this.prevToken.value === "\\expandafter",
+          prev?.type === "word_control" && prev.value === "\\expandafter",
       });
       if (value !== undefined)
         return {
