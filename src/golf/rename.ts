@@ -7,6 +7,7 @@ import {
   Program,
   Control,
   Other,
+  control,
 } from "../types/AST";
 import { golfError, golfWarning } from "../types/diagnostics";
 import {
@@ -69,6 +70,7 @@ export function renamePair(n: Child): [string, string] | undefined {
     golfError(
       `Expected exactly two identifiers after 'rename' but got ${t.length}`
     );
+  if (t[1].type === "Other") t[1] = control(t[1].value);
   const bad = t.filter((c) => c.type !== "Control");
   if (bad.length > 0)
     golfError(`Expected Control after 'rename' but got ${bad[0].type}`);
