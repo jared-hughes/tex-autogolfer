@@ -31,12 +31,25 @@ export function rename(program: Program): Program {
   if (forcedRenames.size < _forcedRenames.length)
     golfError("Duplicate \\usegolf{\\rename<id1><id2>}");
   const mapping = pickNameMapping(program, forcedRenames, extraNames);
-  return withReplacer(program, (n) => {
+  program = withReplacer(program, (n) => {
     if (renamePair(n) !== undefined) return [];
     if (n.type !== "Control") return undefined;
     const value = mapping.get(n.value);
     if (value === undefined) return undefined;
     return { ...n, value };
+  });
+  program = removeDuplicateNewcounts(program);
+  return program;
+}
+
+function removeDuplicateNewcounts(program: Program): Program {
+  const seen = new Set();
+  return withReplacer(program, (n) => {
+    if (n.type !== "Newcount") return undefined;
+    const name = n.binding.value;
+    if (seen.has(name)) return [];
+    seen.add(name);
+    return undefined;
   });
 }
 

@@ -130,6 +130,9 @@ class Parser extends Lexer {
 
   parseLet(): Let {
     // Already consumed a "\let"
+    // TODO: Add macros like #1 to lexer.
+    // TODO: allow those on rhs of Let.
+    // For united-states
     const name = this.consumeType("Control");
     const rhs = this.consumeType("Control");
     return { type: "Let", callee: control("\\let"), binding: name, rhs };
