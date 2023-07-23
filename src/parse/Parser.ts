@@ -85,20 +85,34 @@ class Parser extends Lexer {
           return { type: "NumSep" };
         }
       }
-      case "Control":
-        if (this.insideUsegolf) return token;
+      case "Control": {
+        let callee = control(token.value);
+        if (this.peek().type === "Mapsto") {
+          this.consume();
+          const mapsto = this.consumeType("Control");
+          callee = { ...callee, mapsto };
+        }
+        if (this.insideUsegolf) return callee;
         if (
           !token.afterExpandafter &&
-          ["\\def", "\\edef", "\\gdef", "\\xdef"].includes(token.value)
+          ["\\def", "\\edef", "\\gdef", "\\xdef"].includes(callee.value)
         )
-          return this.parseDef(token);
-        if (token.value === "\\let") return this.parseLet();
-        if (token.value === "\\newcount") return this.parseNewcount();
-        if (token.value === "\\usegolf") return this.parseUsegolf();
-        return token;
+          return this.parseDef(callee);
+        if (callee.value === "\\let") return this.parseLet(callee);
+        if (callee.value === "\\newcount") return this.parseNewcount(callee);
+        if (callee.value === "\\usegolf") return this.parseUsegolf();
+        return callee;
+      }
+      case "Mapsto": {
+        this.pushError("'↦' must be preceded by a control sequence.", token);
+        if (this.peek().type === "Control") this.consume();
+        return undefined;
+      }
       case "EOF":
         if (!prev) throw this.pushFatalError("Unexpected end of file", token);
         return undefined;
+      default:
+        token satisfies never;
     }
   }
 
@@ -128,20 +142,20 @@ class Parser extends Lexer {
     };
   }
 
-  parseLet(): Let {
+  parseLet(callee: Control): Let {
     // Already consumed a "\let"
     // TODO: Add macros like #1 to lexer.
     // TODO: allow those on rhs of Let.
     // For united-states
     const name = this.consumeType("Control");
     const rhs = this.consumeType("Control");
-    return { type: "Let", callee: control("\\let"), binding: name, rhs };
+    return { type: "Let", callee, binding: name, rhs };
   }
 
-  parseNewcount(): Newcount {
+  parseNewcount(callee: Control): Newcount {
     // Already consumed a "\newcount"
     const binding = this.consumeType("Control");
-    return { type: "Newcount", callee: control("\\newcount"), binding };
+    return { type: "Newcount", callee, binding };
   }
 
   parseUsegolf(): Usegolf {

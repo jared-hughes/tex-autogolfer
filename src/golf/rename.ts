@@ -34,6 +34,7 @@ export function rename(program: Program): Program {
   program = withReplacer(program, (n) => {
     if (renamePair(n) !== undefined) return [];
     if (n.type !== "Control") return undefined;
+    if (n.mapsto) return n.mapsto;
     const value = mapping.get(n.value);
     if (value === undefined) return undefined;
     return { ...n, value };

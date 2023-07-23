@@ -25,6 +25,7 @@ export interface Control {
   value: string;
   needsSpaceAfterIfCount?: boolean;
   needsBracesIfCount?: boolean;
+  mapsto?: Control;
 }
 
 export interface Newline {

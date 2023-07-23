@@ -50,5 +50,15 @@ export interface EndAuto {
   type: "EndAuto";
 }
 
-export type TokenValue = SharedToken | BeginAuto | EndAuto | NumSepHint | EOF;
+export interface Mapsto {
+  type: "Mapsto";
+}
+
+export type TokenValue =
+  | SharedToken
+  | BeginAuto
+  | EndAuto
+  | NumSepHint
+  | Mapsto
+  | EOF;
 export type TokenType = TokenValue["type"];

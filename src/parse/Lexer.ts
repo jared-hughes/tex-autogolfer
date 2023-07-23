@@ -8,6 +8,7 @@ const rules = {
   comment: { match: /%[^\n]*\n?/, lineBreaks: true },
   word_control: { match: /\\[A-Za-z]+ ?/, value: (s: string) => s.trimEnd() },
   symb_control: /\\./,
+  mapsto: /↦/,
   active: /[~\f]/,
   begin: /\{/,
   end: /\}/,
@@ -139,6 +140,8 @@ function tokenValue(
     case "symb_control":
     case "active":
       return { type: "Control", value: t.value, afterExpandafter };
+    case "mapsto":
+      return { type: "Mapsto" };
     case "begin":
       return { type: "Begin" };
     case "end":

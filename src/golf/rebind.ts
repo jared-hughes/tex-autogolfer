@@ -8,7 +8,7 @@ export function rebind(program: Program): Program {
   const rebindings = new Map(rebinds.map((s) => [s, s + "Rebind"]));
   // Do the rebinding
   program = withReplacer(program, (n): Child | undefined => {
-    if (n.type === "Control") {
+    if (n.type === "Control" && !n.mapsto) {
       const newName = rebindings.get(n.value);
       if (!newName) return undefined;
       return { ...n, value: newName };

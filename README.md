@@ -64,6 +64,8 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
    - Write `\usegolf{rename-add\name}` if you want to prioritize consideration of that control sequence. For example, if you change `$` to be an active character (``\catcode`$=13``), then write `\usegolf{rename-add$}`
    - If you change `%` to be an active character, then write `\usegolf{rename-add\char37}` (since `%` is byte 37). Same applies to any other single byte, but if it's not a special character, you can also write the name directly.
 
+1. If an operation such as `\rebind` would rename too much stuff, name the control sequences you don't want renamed with `↦`. E.g. `\def↦\def\f{hi}` (instead of `\def\f{hi}`) if you rebind `\def` later on.
+
 1. Not a golf option, but just an ease of input: write `⦃97⦄` to get an `a`, for example. Specify the codepoint in decimal (or in hex, with a 0x prefix, e.g. `⦃0x61⦄`). This is in the pre-processer, before any golfs happen. In particular, `⦃12⦄` gives form feed.
 
 There's one more option. If you write `--preserve-newlines` on the command line, then the parser will not delete newlines.
@@ -90,6 +92,7 @@ A sample `.XCompose` for the funny unicode.
 <Multi_key> <slash> <slash>		: "⫽"
 <Multi_key> <braceleft> <braceleft>	: "⦃"
 <Multi_key> <braceright> <braceright>	: "⦄"
+<Multi_key> <t> <o>                     : "↦"
 ```
 
 ## Dev
