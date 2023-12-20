@@ -17,6 +17,7 @@ const rules = {
   newline: { match: /\n(?:\s*\n)+/, lineBreaks: true },
   forced_output_space: /␣/,
   forced_source_space: /…/,
+  forced_source_newline: /⏎/,
   num_sep_hint: /⫽+/,
   solo_newline: { match: /\n/, lineBreaks: true },
   space: / +/,
@@ -134,6 +135,8 @@ function tokenValue(
       return undefined;
     case "forced_source_space":
       return { type: "Other", value: " " };
+    case "forced_source_newline":
+      return { type: "Other", value: "\n" };
     case "solo_newline":
       return opts.preserveNewlines ? { type: "Other", value: "\n" } : undefined;
     case "word_control":

@@ -88,11 +88,12 @@ This tool makes no guarantee about preserving program correctness. However, ther
 A sample `.XCompose` for the funny unicode.
 
 ```
-<Multi_key> <space> <space>		: "␣"
-<Multi_key> <slash> <slash>		: "⫽"
-<Multi_key> <braceleft> <braceleft>	: "⦃"
-<Multi_key> <braceright> <braceright>	: "⦄"
+<Multi_key> <space> <space>		          : "␣"
+<Multi_key> <slash> <slash>		          : "⫽"
+<Multi_key> <braceleft> <braceleft>	    : "⦃"
+<Multi_key> <braceright> <braceright>	  : "⦄"
 <Multi_key> <t> <o>                     : "↦"
+<Multi_key> <slash> <period>            : "⏎"
 ```
 
 ## Dev
