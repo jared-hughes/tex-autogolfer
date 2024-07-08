@@ -14,6 +14,7 @@ const rules = {
   end: /\}/,
   begin_auto: /⦃/,
   end_auto: /⦄/,
+  counter_index: /♯/,
   newline: { match: /\n(?:\s*\n)+/, lineBreaks: true },
   forced_output_space: /␣/,
   forced_source_space: /…/,
@@ -153,6 +154,8 @@ function tokenValue(
       return { type: "BeginAuto" };
     case "end_auto":
       return { type: "EndAuto" };
+    case "counter_index":
+      return { type: "CounterIndex" };
     case "newline":
       return { type: "Newline" };
     case "forced_output_space":

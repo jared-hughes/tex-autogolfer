@@ -28,6 +28,11 @@ export interface Control {
   mapsto?: Control;
 }
 
+export interface CounterIndex {
+  type: "CounterIndex";
+  value: string;
+}
+
 export interface Newline {
   type: "Newline";
 }
@@ -73,7 +78,7 @@ export interface Newcount {
   binding: Control;
 }
 
-export type Leaf = Other | Control | Newline | Space | NumSep;
+export type Leaf = Other | Control | CounterIndex | Newline | Space | NumSep;
 
 export type ChildParent = Group | Def | Let | Newcount | Usegolf;
 
@@ -98,6 +103,7 @@ export function isParent(node: Node): node is Parent {
       node satisfies Parent;
       return true;
     case "Control":
+    case "CounterIndex":
     case "Newline":
     case "Other":
     case "NumSep":

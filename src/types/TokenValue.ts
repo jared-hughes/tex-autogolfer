@@ -50,6 +50,10 @@ export interface EndAuto {
   type: "EndAuto";
 }
 
+export interface CounterIndex {
+  type: "CounterIndex";
+}
+
 export interface Mapsto {
   type: "Mapsto";
 }
@@ -58,6 +62,7 @@ export type TokenValue =
   | SharedToken
   | BeginAuto
   | EndAuto
+  | CounterIndex
   | NumSepHint
   | Mapsto
   | EOF;

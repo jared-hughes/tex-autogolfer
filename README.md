@@ -42,6 +42,7 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
    - Write `⦃ ⦄` around and counter control sequence that needs curly braces around it if convered to a `\count`
      - e.g. write `\argv⦃\x⦄` so it can be transformed to `\argv{\count1}` instead of `\argv\count1`.
      - If there is no `\usegolf{count}`, then the curly braces are removed.
+   - Write `♯` to get the counter index, so `\count♯\d` is equivalent to `\d` when `\usegolf{count}` is enabled.
 
 1. `\usegolf{rebind<control-seq>}`: really just a convenience
 
@@ -94,6 +95,7 @@ A sample `.XCompose` for the funny unicode.
 <Multi_key> <braceright> <braceright>	  : "⦄"
 <Multi_key> <t> <o>                     : "↦"
 <Multi_key> <slash> <period>            : "⏎"
+<Multi_key> <numbersign> <numbersign>   : "♯"
 ```
 
 ## Dev

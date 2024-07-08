@@ -43,6 +43,12 @@ function insertCounts(program: Program): Program {
   program = withReplacer(program, (n): Child[] | undefined => {
     // Remove \newcount\x and replace \x with \count1
     if (n.type === "Newcount") return [];
+    if (n.type === "CounterIndex") {
+      const counter = mapping.get(n.value);
+      if (counter === undefined)
+        throw new Error(`Unknown counter: '${n.value}'`);
+      return [{ type: "Other", value: counter.toString() }];
+    }
     if (n.type !== "Control") return undefined;
     const counter = mapping.get(n.value);
     if (counter === undefined) return undefined;

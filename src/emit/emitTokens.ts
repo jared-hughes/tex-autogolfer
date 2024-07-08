@@ -39,6 +39,10 @@ function* emit(node: Node): Generator<EmitToken, void> {
       yield* emit(node.callee);
       yield* emit(node.binding);
       break;
+    case "CounterIndex":
+      throw new Error(
+        "Missing \\usegolf{count}. Expected due to `♯` in source file."
+      );
     default:
       node satisfies never;
   }

@@ -61,6 +61,10 @@ class Parser extends Lexer {
         return this.parseGroup();
       case "BeginAuto":
         return this.parseCounterAuto();
+      case "CounterIndex": {
+        const ctrl = this.consumeType("Control");
+        return { type: "CounterIndex", value: ctrl.value };
+      }
       case "End":
       case "EndAuto":
         throw this.pushFatalError("Unmatched '}'.", token);
