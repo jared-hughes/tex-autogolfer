@@ -34,15 +34,16 @@ Output (36 bytes):
 
 Most golfing configuration is on the input files of the form of LaTeX-looking `\usegolf` commands. While `\usegolf` can be specified in any order, golfing transforms are always executed in the same order.
 
-1. `\usegolf{count}`: convert `\newcount` usages to `\count`.
+1. `\usegolf{count}`: convert `\newcount` usages to `\count`. By default, counters 1 through 9 and 23 onwards are used.
 
    - Write `⫽` after any counter control sequence that needs a space after it if converted to a `\count`
      - `⫽` is automatically inserted before any digit preceded by a control sequence
      - e.g. a macro to mod counter `\d` by a number literal can be written `\def\m#1;{\u\d\divide\u⫽#1\multiply\u⫽#1\advance\d-\u}` and used `\m17;`
-   - Write `⦃ ⦄` around and counter control sequence that needs curly braces around it if convered to a `\count`
+   - Write `⦃ ⦄` around any counter control sequence that needs curly braces around it if convered to a `\count`
      - e.g. write `\argv⦃\x⦄` so it can be transformed to `\argv{\count1}` instead of `\argv\count1`.
      - If there is no `\usegolf{count}`, then the curly braces are removed.
    - Write `♯` to get the counter index, so `\count♯\d` is equivalent to `\d` when `\usegolf{count}` is enabled.
+   - Write `\usegolf{countrebind\c0}` to replace every instance of `\c` with `\count0`. This follows the other rules, so `\c⫽\the` would become `\count0 \the` and `\argv⦃\c⦄` becomes `\argv{\count0}`.
 
 1. `\usegolf{rebind<control-seq>}`: really just a convenience
 

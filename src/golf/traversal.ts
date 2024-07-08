@@ -175,7 +175,8 @@ function _withListReplacer(
   }
 }
 
-export function trimStart(ns: Child[], value: string) {
+/** Trim string `value` of "Other" tokens from the start of nodes `ns`. */
+export function trimStart(ns: Child[], value: string): Child[] | undefined {
   if (value.length === 0) return ns;
   for (let i = 0; i < ns.length; i++) {
     const n = ns[i];

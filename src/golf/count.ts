@@ -10,16 +10,31 @@ import {
 import { golfError } from "../types/diagnostics";
 import { rebinding } from "./rebind";
 import { renamePair } from "./rename";
-import { filter, unique, withListReplacer, withReplacer } from "./traversal";
+import {
+  filter,
+  trimStart,
+  unique,
+  withListReplacer,
+  withReplacer,
+} from "./traversal";
+
+type CountRebinding = [string, number];
 
 export function count(program: Program): Program {
+  const countRebinds: CountRebinding[] = [];
   program = withReplacer(program, (n): Child[] | undefined => {
     // remove \usegolf{rebind\newcount}
     if (rebinding(n) === "\\newcount") return [];
     // remove \usegolf{rename\newcount\x}
     if (renamePair(n)?.[0] === "\\newcount") return [];
+    // remove \usegolf{rebindcount\x0}, but keep track
+    const r = countRebinding(n);
+    if (r !== undefined) {
+      countRebinds.push(r);
+      return [];
+    }
   });
-  return insertCounts(insertNumSepAuto(program));
+  return insertCounts(insertNumSepAuto(program), countRebinds);
 }
 
 function insertNumSepAuto(program: Program) {
@@ -38,18 +53,25 @@ function insertNumSepAuto(program: Program) {
   });
 }
 
-function insertCounts(program: Program): Program {
-  const mapping = pickCountMapping(program);
+function insertCounts(
+  program: Program,
+  countRebinds: CountRebinding[]
+): Program {
+  const mapping = pickCountMapping(program, countRebinds);
   program = withReplacer(program, (n): Child[] | undefined => {
-    // Remove \newcount\x and replace \x with \count1
-    if (n.type === "Newcount") return [];
+    if (n.type === "Newcount") {
+      // Remove \newcount\x
+      return [];
+    }
     if (n.type === "CounterIndex") {
+      // Replace `♯\x` with 1
       const counter = mapping.get(n.value);
       if (counter === undefined)
         throw new Error(`Unknown counter: '${n.value}'`);
-      return [{ type: "Other", value: counter.toString() }];
+      return numberToItems(counter);
     }
     if (n.type !== "Control") return undefined;
+    // Replace \x with \count1
     const counter = mapping.get(n.value);
     if (counter === undefined) return undefined;
     const cnt = { type: "Control", value: "\\count" } as const;
@@ -77,13 +99,25 @@ function numberToItems(n: number) {
   );
 }
 
-function pickCountMapping(program: Program) {
-  const mapping = new Map<string, number>();
+function itemsToNumber(ns: Child[]): number | undefined {
+  let s = "";
+  for (const n of ns) {
+    if (n.type !== "Other") return undefined;
+    if (!/^\d+$/.test(n.value)) return undefined;
+    s += n.value;
+  }
+  return parseFloat(s);
+}
+
+function pickCountMapping(program: Program, countRebinds: CountRebinding[]) {
+  const taken = new Set(countRebinds.map(([_k, v]) => v));
+  const mapping = new Map<string, number>(countRebinds);
   let i = 0;
   for (const name of counters(program)) {
+    if (mapping.has(name)) continue;
     do {
       ++i;
-    } while (!isFreeCounter(i));
+    } while (!isFreeCounter(i) || taken.has(i));
     mapping.set(name, i);
   }
   return mapping;
@@ -97,4 +131,22 @@ function isFreeCounter(i: number) {
 
 function counters(program: Node) {
   return unique([...filter(program, isNewcount)].map((x) => x.binding.value));
+}
+
+function countRebinding(n: Node): CountRebinding | undefined {
+  if (n.type !== "Usegolf") return undefined;
+  const t = trimStart(n.children, "countrebind");
+  if (t === undefined) return undefined;
+  const c = t[0];
+  if (c.type !== "Control")
+    golfError(`Expected Control after 'countrebind' but got ${c.type}`);
+  const num = itemsToNumber(t.slice(1));
+  if (num === undefined)
+    golfError(
+      `Expected Number after 'countrebind${c.value}' but got something else.`
+    );
+  if (num < 0 || num > 255 || !Number.isInteger(num)) {
+    golfError(`Invalid register number '${num}'.`);
+  }
+  return [c.value, num];
 }
