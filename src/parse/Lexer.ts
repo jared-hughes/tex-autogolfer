@@ -157,7 +157,11 @@ function tokenValue(
     case "counter_index":
       return { type: "CounterIndex" };
     case "newline":
-      return { type: "Newline" };
+      return opts.preserveNewlines
+        ? { type: "Other", value: t.value }
+        : opts.newlinePar
+        ? { type: "Newline" }
+        : undefined;
     case "forced_output_space":
       return { type: "Space" };
     case "num_sep_hint":

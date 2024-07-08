@@ -10,6 +10,7 @@ const options = parseArgs(process.argv.slice(2), {
   boolean: true,
   default: {
     "preserve-newlines": false,
+    "newline-par": true,
   },
 });
 
@@ -18,7 +19,10 @@ Usage: tex-autogolfer [FILE]
 Golfs the TeX FILE by renaming identifiers, removing whitespace, etc.
 
 Options:
-  --preserve-newlines       keep input newlines in the output
+  --preserve-newlines       Keep input newlines in the output.
+  --no-newline-par          Treat consecutive newlines as spaces, not \`\\par\`.
+                            Note \`\\par\` can be converted to double-newline by
+                            using \`\\usegolf{par-is-newline}\`
 `.trim();
 if (options.h) {
   console.log(HELP);
@@ -34,6 +38,7 @@ function consumeOption(s: string) {
 
 const opts = {
   preserveNewlines: !!consumeOption("preserve-newlines"),
+  newlinePar: !!consumeOption("newline-par"),
 } satisfies Opts;
 
 const bad = Object.keys(options).filter((x) => x !== "_");

@@ -30,6 +30,38 @@ Output (36 bytes):
 \def~#1{#1#1}\def\!#1{#1#1#1}~a\!c~b
 ```
 
+## Install
+
+```sh
+npm install
+npm run build
+npm install -g .
+```
+
+## Usage
+
+```sh
+tex-autogolfer input.tex > golfed.tex
+```
+
+See `tex-autogolfer --help` for flags.
+
+- `--preserve-newlines` helps with debugging.
+- `--no-newline-par` helps avoid accidental bytes. Pair it with `\usegolf{par-is-newline}`. Just keep in mind that `\par` only costs two bytes.
+
+## Disclaimer
+
+This tool makes no guarantee about preserving program correctness. However, there are some ways you can help the tool ensure it doesn't change program behavior:
+
+- Mark required spaces (for typography) as `␣`. These convert to ` ` (or `\ ` if the ` ` would be gobbled)
+- Mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` ` (or `{}` if the ` ` would be gobbled)
+- Mark required spaces (for `\catcode32=12`) as `…`. These convert to ` ` unconditionally
+- Messing with `\catcode`s is risky.
+- Don't use multi-byte UTF-8 characters in places that would confuse the tool
+  - TeX doesn't understand multi-byte characters (your code gets broken into bytes), but I decided to preserve them.
+- Ensure each identifier is only for one purpose (i.e. isn't re-defined)
+- More suggestions, such as `\x⫽` and `⦃\x⦄` are listed above in the "Configuration" section.
+
 ## Configuration
 
 Most golfing configuration is on the input files of the form of LaTeX-looking `\usegolf` commands. While `\usegolf` can be specified in any order, golfing transforms are always executed in the same order.
@@ -71,19 +103,6 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
 1. Not a golf option, but just an ease of input: write `⦃97⦄` to get an `a`, for example. Specify the codepoint in decimal (or in hex, with a 0x prefix, e.g. `⦃0x61⦄`). This is in the pre-processer, before any golfs happen. In particular, `⦃12⦄` gives form feed.
 
 There's one more option. If you write `--preserve-newlines` on the command line, then the parser will not delete newlines.
-
-## Disclaimer
-
-This tool makes no guarantee about preserving program correctness. However, there are some ways you can help the tool ensure it doesn't change program behavior:
-
-- Mark required spaces (for typography) as `␣`. These convert to ` ` (or `\ ` if the ` ` would be gobbled)
-- Mark required spaces (for preventing e.g. a number from running on too long) as `⫽⫽`. These convert to ` ` (or `{}` if the ` ` would be gobbled)
-- Mark required spaces (for `\catcode32=12`) as `…`. These convert to ` ` unconditionally
-- Messing with `\catcode`s is risky.
-- Don't use multi-byte UTF-8 characters in places that would confuse the tool
-  - TeX doesn't understand multi-byte characters (your code gets broken into bytes), but I decided to preserve them.
-- Ensure each identifier is only for one purpose (i.e. isn't re-defined)
-- More suggestions, such as `\x⫽` and `⦃\x⦄` are listed above in the "Configuration" section.
 
 ## XCompose
 

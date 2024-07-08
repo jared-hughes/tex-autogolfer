@@ -6,8 +6,10 @@ import { filter, trimStart, withReplacer } from "./traversal";
 import { emitString } from "..";
 import { desugar } from "./desugar";
 import { golfWarning } from "../types/diagnostics";
+import { parIsNewline } from "./parIsNewline";
 
 export const transforms = [
+  { name: "par-is-newline", transform: parIsNewline },
   { name: "desugar", transform: desugar, always: true },
   { name: "count", transform: count },
   { name: "rebind", transform: rebind, always: true },

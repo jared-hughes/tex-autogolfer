@@ -13,6 +13,7 @@ import { Lexer } from "./Lexer";
 
 export interface ParseOpts {
   preserveNewlines: boolean;
+  newlinePar: boolean;
 }
 
 export function parse(tex: string, opts: ParseOpts): Program {
