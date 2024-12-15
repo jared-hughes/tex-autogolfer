@@ -7,9 +7,11 @@ import { emitString } from "..";
 import { desugar } from "./desugar";
 import { golfWarning } from "../types/diagnostics";
 import { parIsNewline } from "./parIsNewline";
+import { replace } from "./replace";
 
 export const transforms = [
   { name: "par-is-newline", transform: parIsNewline },
+  { name: "replace", transform: replace, always: true },
   { name: "desugar", transform: desugar, always: true },
   { name: "count", transform: count },
   { name: "rebind", transform: rebind, always: true },

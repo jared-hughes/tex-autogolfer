@@ -83,6 +83,10 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
    - `\usegolf{count}` automatically adds a `\usegolf{rebind\count}` at the top of the file
    - The `\let` is placed at the position of the `\usegolf`, so writing `\usegolf{rebind\newcount~}\newcount\x\usegolf{rebind\advance~}\advance\x1` will work.
 
+1. `\usegolf{replace<control-seq><remainder>}`: really just a convenience
+
+   - For example, `\usegolf{replace\i\fam}` replaces every `\i` with a `~`
+
 1. `\usegolf{rename}`: rename identifiers bound with `\let`, `\def`, and `\newcount`
 
    - The identifiers are renamed by default to identifiers like `\$`. These have the slight advantages (over `\a`) of less often needing spaces after them
