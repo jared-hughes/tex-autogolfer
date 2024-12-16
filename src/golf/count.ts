@@ -23,8 +23,9 @@ type CountRebinding = [string, number];
 export function count(program: Program): Program {
   const countRebinds: CountRebinding[] = [];
   program = withReplacer(program, (n): Child[] | undefined => {
-    // remove \usegolf{rebind\newcount}
-    if (rebinding(n) === "\\newcount") return [];
+    // remove \usegolf{rebind\newcount} and same for rebind.
+    if (rebinding(n, "rebind") === "\\newcount") return [];
+    if (rebinding(n, "rebindDef") === "\\newcount") return [];
     // remove \usegolf{rename\newcount\x}
     if (renamePair(n)?.[0] === "\\newcount") return [];
     // remove \usegolf{rebindcount\x0}, but keep track
