@@ -15,7 +15,9 @@ const rules = {
   begin_auto: /⦃/,
   end_auto: /⦄/,
   counter_index: /♯/,
-  newline: { match: /\n(?:\s*\n)+/, lineBreaks: true },
+  // Only space and tab are spaces in TeX.
+  // Don't use \s regex because that undesirably treats bytes 0x0B through 0x0D as a space.
+  newline: { match: /\n(?:[ \t]*\n)+/, lineBreaks: true },
   forced_output_space: /␣/,
   forced_source_space: /…/,
   forced_source_newline: /⏎/,
