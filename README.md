@@ -86,7 +86,7 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
 
 1. `\usegolf{replace<control-seq><remainder>}`: really just a convenience
 
-   - For example, `\usegolf{replace\i\fam}` replaces every `\i` with a `~`
+   - For example, `\usegolf{replace\i\fam}` replaces every `\i` with `\fam`
 
 1. `\usegolf{rename}`: rename identifiers bound with `\let`, `\def`, and `\newcount`
 
