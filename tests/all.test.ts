@@ -43,6 +43,7 @@ const cases: Record<string, string> = {
     "\x01\x02\x03\x04\x05\x06\x07\b\x0B\f\r\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F!abcdefghijklmnopqrstuvwxyz{|}~\x7F",
   "exM.tex":
     "\\let\f\\let\f\\!\\count\f\\@\\expandafter\f~\\ifnum\f\f\\advance\\@\\@\\@\f\f\f~~~\\!1\\!2\\!2\\!3\\!1\\!3\\!2\\!1",
+  "exN.tex": "\\let\\$\\count\\$1\\$2\\$2\\$3\\$1\\$3\\$2\\$1",
 };
 
 for (const [name, exp] of Object.entries(cases)) {
