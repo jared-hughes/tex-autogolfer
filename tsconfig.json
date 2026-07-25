@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["node"],
     "strictNullChecks": true,
     "outDir": "dist",
     "target": "ES2022",

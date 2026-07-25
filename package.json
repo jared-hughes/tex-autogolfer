@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/minimist": "^1.2.2",
     "@types/moo": "^0.5.5",
-    "@types/node": "^20.4.2",
+    "@types/node": "^20.19.43",
     "esbuild": "^0.18.13",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
@@ -35,7 +35,9 @@
     "build": "wireit",
     "lint": "wireit",
     "lint:types": "wireit",
-    "lint:eslint": "wireit"
+    "lint:eslint": "wireit",
+    "build-tests": "npx esbuild tests/all.test.ts --platform=node --sourcemap --bundle --outfile=dist/all.test.js",
+    "test": "npm run build-tests && node --test dist/all.test.js"
   },
   "wireit": {
     "build": {
