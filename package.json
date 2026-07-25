@@ -17,6 +17,7 @@
   "author": "Jared Hughes",
   "license": "MIT",
   "devDependencies": {
+    "typescript": "6.0.3",
     "@types/minimist": "^1.2.2",
     "@types/moo": "^0.5.5",
     "@types/node": "^20.19.43",

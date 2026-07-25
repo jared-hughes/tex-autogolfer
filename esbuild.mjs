@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const watch = args.includes("--watch") || args.includes("-w");
 
 const opts = {
-  entryPoints: ["cli.ts"],
+  entryPoints: ["./src/cli.ts"],
   sourcemap: true,
   bundle: true,
   platform: "node",
