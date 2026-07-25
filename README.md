@@ -76,11 +76,11 @@ Most golfing configuration is on the input files of the form of LaTeX-looking `\
      - If there is no `\usegolf{count}`, then the curly braces are removed.
    - Write `♯` to get the counter index, so `\count♯\d` is equivalent to `\d` when `\usegolf{count}` is enabled.
    - Write `\usegolf{countrebind\c0}` to replace every instance of `\c` with `\count0`. This follows the other rules, so `\c⫽\the` would become `\count0 \the` and `\argv⦃\c⦄` becomes `\argv{\count0}`.
+   - `\usegolf{count}` automatically adds a `\usegolf{rebind\count}` at the position of the `\usegolf{count}`
 
 1. `\usegolf{rebind<control-seq>}`: really just a convenience
 
    - For example, `\usegolf{rebind\def}` replaces every `\def` with a `\defRebind` and puts a `\let\defRebind\def` to the program. This lets `\usegolf{rename}` below rename `\def`
-   - `\usegolf{count}` automatically adds a `\usegolf{rebind\count}` at the top of the file
    - The `\let` is placed at the position of the `\usegolf`, so writing `\usegolf{rebind\newcount~}\newcount\x\usegolf{rebind\advance~}\advance\x1` will work.
    - If `\def` is already rebound to a single character, use `\usegolf{rebindDef<control-seq>}` instead.
 

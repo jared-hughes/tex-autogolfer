@@ -1,12 +1,4 @@
-import {
-  Child,
-  Node,
-  Other,
-  Program,
-  control,
-  isNewcount,
-  usegolf,
-} from "../types/AST";
+import { Child, Node, Other, Program, isNewcount } from "../types/AST";
 import { golfError } from "../types/diagnostics";
 import { rebinding } from "./rebind";
 import { renamePair } from "./rename";
@@ -82,13 +74,7 @@ function insertCounts(
     const g = [cnt, ...numberToItems(counter), ...numSep];
     return n.needsBracesIfCount ? [{ type: "Group", children: g }] : g;
   });
-  return {
-    ...program,
-    children: [
-      usegolf([{ type: "Other", value: "rebind" }, control("\\count")]),
-      ...program.children,
-    ],
-  };
+  return program;
 }
 
 function numberToItems(n: number) {
