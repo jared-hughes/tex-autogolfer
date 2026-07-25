@@ -34,7 +34,7 @@ export function golfAST(program: Program): Program {
   const golfs = [...filter(program, isUsegolf)].map(emitString);
   if (golfs.length > 0) {
     golfWarning(
-      "Warning: unknown golfs:\n" + golfs.map((x) => "  " + x).join("\n")
+      "Warning: unknown golfs:\n" + golfs.map((x) => "  " + x).join("\n"),
     );
   }
   return program;

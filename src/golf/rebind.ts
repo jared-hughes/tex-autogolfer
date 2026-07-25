@@ -25,7 +25,7 @@ export function rebindOne(program: Program, type: "def" | "let"): Program {
     const rebound = rebindings.get(re);
     if (!rebound) return undefined;
     const cmd = `\\${type}`; // \\let or \\def
-    const callee = control(re === cmd ? cmd : rebindings.get(cmd) ?? cmd);
+    const callee = control(re === cmd ? cmd : (rebindings.get(cmd) ?? cmd));
     if (type === "let") {
       return {
         type: "Let",
@@ -52,7 +52,7 @@ export function rebinding(n: Child, golfname: string): string | undefined {
   if (t === undefined) return undefined;
   if (t.length !== 1)
     golfError(
-      `Expected exactly one identifier after '${golfname}' but got ${t.length}`
+      `Expected exactly one identifier after '${golfname}' but got ${t.length}`,
     );
   const c = t[0];
   if (c.type !== "Control")

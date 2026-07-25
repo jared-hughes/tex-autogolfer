@@ -15,7 +15,7 @@ export function detokenize(tokens: readonly EmitToken[]): string {
 // Replace `⫽⫽␣` with `\ `
 function mergeNumSepSpace(tokens: readonly EmitToken[]) {
   const out: EmitToken[] = [];
-  for (let i = 0; i < tokens.length; ) {
+  for (let i = 0; i < tokens.length;) {
     if (tokens[i].type === "NumSep" && tokens[i + 1]?.type === "Space") {
       out.push({ type: "Control", value: "\\ " });
       i += 2;

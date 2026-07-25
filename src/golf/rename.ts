@@ -68,7 +68,7 @@ function extraName(n: Child): string | undefined {
           return n.type === "Other";
         })
         .map((x) => x.value)
-        .join("")
+        .join(""),
     );
     return String.fromCharCode(int);
   } else if (t.length === 1 && t[0].type === "Other") {
@@ -82,7 +82,7 @@ export function renamePair(n: Child): [string, string] | undefined {
   if (t === undefined || t.length === 0) return undefined;
   if (t.length !== 2)
     golfError(
-      `Expected exactly two identifiers after 'rename' but got ${t.length}`
+      `Expected exactly two identifiers after 'rename' but got ${t.length}`,
     );
   if (t[1].type === "Other") t[1] = control(t[1].value);
   const bad = t.filter((c) => c.type !== "Control");
@@ -94,7 +94,7 @@ export function renamePair(n: Child): [string, string] | undefined {
 function pickNameMapping(
   program: Program,
   forcedRenames: Map<string, string>,
-  extraNames: string[]
+  extraNames: string[],
 ) {
   // Reduce everything to backslash + one letter
   // Except whatever is most frequent becomes tilde
@@ -114,7 +114,7 @@ function pickNameMapping(
     ...unfree.map((v): [string, string] => [v, v]),
   ]);
   const counts = new Map(
-    [...getNameCounts(program)].filter(([id]) => free.includes(id))
+    [...getNameCounts(program)].filter(([id]) => free.includes(id)),
   );
   if (counts.size === 0) return mapping;
   const freefree = free

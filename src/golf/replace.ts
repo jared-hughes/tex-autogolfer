@@ -28,7 +28,7 @@ export function replacement(n: Child): [string, Child[]] | undefined {
   if (t === undefined) return undefined;
   if (t.length < 1)
     golfError(
-      `Expected at least one identifier after 'rebind' but got ${t.length}`
+      `Expected at least one identifier after 'rebind' but got ${t.length}`,
     );
   const c = t[0];
   if (c.type !== "Control")

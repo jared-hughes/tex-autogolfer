@@ -45,7 +45,7 @@ export class Lexer extends DiagnosticsState {
 
   constructor(
     input: string,
-    public opts: ParseOpts
+    public opts: ParseOpts,
   ) {
     input = input.replace(/⦃(?:0x[0-9A-Za-z]+|\d+)⦄/g, (s: string) => {
       const t = String.fromCodePoint(parseInt(s.slice(1, -1)));
@@ -130,7 +130,7 @@ export class Lexer extends DiagnosticsState {
 function tokenValue(
   t: RawToken,
   opts: ParseOpts,
-  { afterExpandafter }: { afterExpandafter: boolean }
+  { afterExpandafter }: { afterExpandafter: boolean },
 ): TokenValue | undefined {
   switch (t.type) {
     case "comment":
@@ -162,8 +162,8 @@ function tokenValue(
       return opts.preserveNewlines
         ? { type: "Other", value: t.value }
         : opts.newlinePar
-        ? { type: "Newline" }
-        : undefined;
+          ? { type: "Newline" }
+          : undefined;
     case "forced_output_space":
       return { type: "Space" };
     case "num_sep_hint":

@@ -59,11 +59,5 @@ export interface Mapsto {
 }
 
 export type TokenValue =
-  | SharedToken
-  | BeginAuto
-  | EndAuto
-  | CounterIndex
-  | NumSepHint
-  | Mapsto
-  | EOF;
+  SharedToken | BeginAuto | EndAuto | CounterIndex | NumSepHint | Mapsto | EOF;
 export type TokenType = TokenValue["type"];

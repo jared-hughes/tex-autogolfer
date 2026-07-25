@@ -6,7 +6,7 @@ import { golfError } from "../types/diagnostics";
  * if the values are not used. Name inspired by Swift's `compactMap`. */
 export function* compactMap<T>(
   node: Node,
-  func: Visitor<T | undefined>
+  func: Visitor<T | undefined>,
 ): Generator<T, void, undefined> {
   // Don't call the function on the program
   const ret = node.type === "Program" ? undefined : func(node);
@@ -18,7 +18,7 @@ export function* compactMap<T>(
 
 export function* filter<S extends Child>(
   node: Node,
-  func: (n: Child) => n is S
+  func: (n: Child) => n is S,
 ): Generator<S, void, undefined> {
   yield* compactMap(node, (c) => (func(c) ? c : undefined));
 }
@@ -67,7 +67,7 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
       case "Def": {
         const [s1, [callee, binding]] = mapSomeChangedControl(
           [node.callee, node.binding],
-          replacer
+          replacer,
         );
         const [s2, params] = flatMapSomeChanged(node.params, replacer);
         const [s3, body] = flatMapSomeChanged(node.body, replacer);
@@ -77,7 +77,7 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
       case "Let": {
         const [s, [callee, binding, rhs]] = mapSomeChangedControl(
           [node.callee, node.binding, node.rhs],
-          replacer
+          replacer,
         );
         if (!s) return [node];
         return [{ type: "Let", callee, binding, rhs }];
@@ -85,7 +85,7 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
       case "Newcount": {
         const [s, [callee, binding]] = mapSomeChangedControl(
           [node.callee, node.binding],
-          replacer
+          replacer,
         );
         if (!s) return [node];
         return [{ type: node.type, binding, callee }];
@@ -138,7 +138,7 @@ type ListReplacer = (node: Child[]) => Child[] | undefined;
 
 export function withListReplacer(
   node: Program,
-  replacer: ListReplacer
+  replacer: ListReplacer,
 ): Program {
   const [_a, c1] = _listReplacerList(node.children, replacer);
   return { ...node, children: replacer(c1) ?? c1 };
@@ -153,7 +153,7 @@ function _listReplacerList(ns: Child[], replacer: ListReplacer) {
 
 function _withListReplacer(
   n: Child,
-  replacer: ListReplacer
+  replacer: ListReplacer,
 ): Child | undefined {
   if (!isParent(n)) return undefined;
   const f = (ns: Child[]) => _listReplacerList(ns, replacer);

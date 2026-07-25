@@ -83,7 +83,7 @@ class Parser extends Lexer {
           if (!prev || prev.type !== "Control")
             throw this.pushFatalError(
               "'⫽' must be after a control sequence like \\x",
-              token
+              token,
             );
           return [{ ...prev, needsSpaceAfterIfCount: true }];
         } else {

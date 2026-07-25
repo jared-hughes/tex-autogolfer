@@ -56,7 +56,7 @@ function insertNumSepAuto(program: Program) {
 
 function insertCounts(
   program: Program,
-  countRebinds: CountRebinding[]
+  countRebinds: CountRebinding[],
 ): Program {
   const mapping = pickCountMapping(program, countRebinds);
   program = withReplacer(program, (n): Child[] | undefined => {
@@ -92,12 +92,10 @@ function insertCounts(
 }
 
 function numberToItems(n: number) {
-  return [...BigInt(n).toString(10)].map(
-    (d): Other => ({
-      type: "Other",
-      value: d,
-    })
-  );
+  return [...BigInt(n).toString(10)].map((d): Other => ({
+    type: "Other",
+    value: d,
+  }));
 }
 
 function itemsToNumber(ns: Child[]): number | undefined {
@@ -144,7 +142,7 @@ function countRebinding(n: Node): CountRebinding | undefined {
   const num = itemsToNumber(t.slice(1));
   if (num === undefined)
     golfError(
-      `Expected Number after 'countrebind${c.value}' but got something else.`
+      `Expected Number after 'countrebind${c.value}' but got something else.`,
     );
   if (num < 0 || num > 255 || !Number.isInteger(num)) {
     golfError(`Invalid register number '${num}'.`);
