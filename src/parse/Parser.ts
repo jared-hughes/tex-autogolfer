@@ -80,7 +80,7 @@ class Parser extends Lexer {
         if (len >= 3 || len === 0)
           this.pushWarning("Invalid num sep hint: must be '⫽' or '⫽⫽'", token);
         if (len === 1) {
-          if (!prev || prev.type !== "Control")
+          if (prev?.type !== "Control")
             throw this.pushFatalError(
               "'⫽' must be after a control sequence like \\x",
               token,

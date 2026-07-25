@@ -59,6 +59,7 @@ function extraName(n: Child): string | undefined {
   const t = trimStart(n.children, "rename-add");
   if (t === undefined) return undefined;
   if (t[0].type === "Control" && t[0].value === "\\char") {
+    // eslint-disable-next-line radix -- relying on behavior of 0x being hexadecimal
     const int = parseInt(
       t
         .slice(1)

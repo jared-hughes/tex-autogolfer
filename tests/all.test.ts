@@ -1,4 +1,4 @@
-/* eslint-disable no-template-curly-in-string */
+/* eslint-disable no-template-curly-in-string -- bunch of curlies in these tests */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { golf, Opts } from "../src/index.js";

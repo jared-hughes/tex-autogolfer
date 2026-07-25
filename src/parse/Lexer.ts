@@ -48,6 +48,7 @@ export class Lexer extends DiagnosticsState {
     public opts: ParseOpts,
   ) {
     input = input.replace(/⦃(?:0x[0-9A-Za-z]+|\d+)⦄/g, (s: string) => {
+      // eslint-disable-next-line radix -- relying on behavior of 0x being hexadecimal
       const t = String.fromCodePoint(parseInt(s.slice(1, -1)));
       return t + " ".repeat(Math.max(s.length - t.length, 0));
     });

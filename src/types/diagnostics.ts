@@ -28,7 +28,7 @@ export class DiagnosticsState {
   }
 }
 
-/* eslint-disable no-console */
+/* eslint-disable no-console -- need to log */
 export function printDiagnostic(input: string, d: Diagnostic) {
   const prefix = d.severity === "error" ? "[error]" : "[warn]";
   console.error(`${prefix} ${d.message}`);
@@ -52,3 +52,4 @@ export function golfError(msg: string): never {
 export function golfWarning(msg: string) {
   console.error("[warn] " + msg);
 }
+/* eslint-enable no-console */

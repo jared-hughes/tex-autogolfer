@@ -4,7 +4,7 @@ import { trimStart, withReplacer } from "./traversal";
 
 export function replace(program: Program): Program {
   // Find rebindings
-  const replacements = new Map();
+  const replacements = new Map<string, Child[]>();
   program = withReplacer(program, (n): Child | Child[] | undefined => {
     const x = replacement(n);
     if (!x) return undefined;

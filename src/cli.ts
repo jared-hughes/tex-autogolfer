@@ -1,9 +1,9 @@
 #!/usr/bin/env -S node --enable-source-maps
-/* eslint-disable no-console */
+/* eslint-disable no-console -- need to log in CLI */
 
 import parseArgs from "minimist";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { Opts, golf } from ".";
 
 const options = parseArgs(process.argv.slice(2), {
@@ -29,9 +29,9 @@ if (options.h) {
   process.exit(0);
 }
 
-function consumeOption(s: string) {
-  const res = options[s];
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+function consumeOption(s: string): string | undefined {
+  const res = options[s] as string | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- its okay
   delete options[s];
   return res;
 }
@@ -49,7 +49,7 @@ for (const key of bad) {
 if (bad.length > 0) process.exit(1);
 
 const positional = consumeOption("_");
-if (positional.length !== 1) {
+if (positional?.length !== 1) {
   console.error("Must specify exactly one file");
   process.exit(1);
 }
@@ -59,7 +59,7 @@ if (!fs.existsSync(input)) input += ".tex";
 let code = fs.readFileSync(input, { encoding: "utf-8" });
 code = golf(code, opts);
 
-const output = options.output;
+const output = consumeOption("output");
 if (output !== undefined) {
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, code);

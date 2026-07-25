@@ -29,7 +29,7 @@ function mergeNumSepSpace(tokens: readonly EmitToken[]) {
 
 function value(token: EmitToken, prev: EmitToken | undefined): string {
   const prevWordControl =
-    prev && prev.type === "Control" && getVariant(prev) === "word";
+    prev?.type === "Control" && getVariant(prev) === "word";
   switch (token.type) {
     case "Space":
       if (prevWordControl) return "\\ ";

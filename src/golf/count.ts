@@ -42,7 +42,7 @@ function insertNumSepAuto(program: Program) {
   return withListReplacer(program, (ns: Child[]) => {
     let someChanged = false;
     const ret = ns.map((n, i): Child => {
-      const next = ns[i + 1];
+      const next = i < ns.length - 1 ? ns[i + 1] : undefined;
       if (n.type !== "Control") return n;
       const ins = next?.type === "Other" && /^\d/.test(next.value);
       if (ins) {
@@ -50,7 +50,7 @@ function insertNumSepAuto(program: Program) {
         return { ...n, needsSpaceAfterIfCount: true };
       } else return n;
     });
-    return someChanged ? ret : undefined;
+    return (someChanged as boolean) ? ret : undefined;
   });
 }
 

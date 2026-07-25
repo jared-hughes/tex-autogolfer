@@ -99,14 +99,17 @@ function _withReplacer(node: Child, replacer: ChildVisitor): Child[] {
   }
 }
 
-function flatMapSomeChanged(arr: Child[], replacer: ChildVisitor) {
+function flatMapSomeChanged(
+  arr: Child[],
+  replacer: ChildVisitor,
+): [boolean, Child[]] {
   let someChanged = false;
   const replaced = arr.flatMap((c) => {
     const d = _withReplacer(c, replacer);
     if (d.length !== 1 || d[0] !== c) someChanged = true;
     return d;
   });
-  return [someChanged, replaced] as const;
+  return [someChanged, replaced];
 }
 
 function mapSomeChanged(arr: Child[], replacer: ChildVisitor) {
@@ -121,13 +124,16 @@ function mapSomeChanged(arr: Child[], replacer: ChildVisitor) {
   return [someChanged, replaced] as const;
 }
 
-function mapSomeChangedControl(arr: Control[], replacer: ChildVisitor) {
+function mapSomeChangedControl(
+  arr: Control[],
+  replacer: ChildVisitor,
+): [boolean, Control[]] {
   const [s, v] = mapSomeChanged(arr, replacer);
   const v2 = v.map((x) => {
     if (x.type !== "Control") golfError("Replaced Control with non-Control");
     return x;
   });
-  return [s, v2] as const;
+  return [s, v2];
 }
 
 export function unique(s: string[]): string[] {
@@ -172,6 +178,8 @@ function _withListReplacer(
       if (!(s1 || s2)) return n;
       return { ...n, params, body };
     }
+    case "Usegolf":
+      break;
   }
 }
 

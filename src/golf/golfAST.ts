@@ -27,7 +27,7 @@ export function golfAST(program: Program): Program {
         return [];
       }
     });
-    if (satisfy || always) {
+    if ((satisfy as boolean) || always) {
       program = transform(program);
     }
   }
