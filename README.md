@@ -1,15 +1,15 @@
 # TeX AutoGolfer
 
-(Heavily Work-in-Progress)
+Highly-golfed TeX programs are hard to maintain. This tool allows you to maintain a readable input `.tex` file while still submitting competitive golfed TeX output. It includes:
 
-Highly-golfed TeX programs are hard to maintain. This tool strives to:
-
-- shrink identifiers to shorter identifiers, in some situations:
-  - ✓ renaming stuff defined by `\def` or `\let`
-  - ✓ Using `\let` to re-define builtin names
-  - Using `\catcode` to make some bytes active
-- ✓ handle transformation of e.g. `\newcount\x`, `\x` to `\count1`
-- ✓ remove whitespace and comments
+- Removing whitespace and comments.
+- Renaming identifiers to 1-byte identifiers.
+  - It automatically picks wacky names like `\%` because `\%x` is shorter than `\f x`.
+  - This is opt-in with `\usegolf{rename}`.
+- Replacing counters with references to `\count` followed by a number.
+  - This avoids the need for `\newcount`s.
+  - This is opt-in with `\usegolf{count}`
+- Many more features (See [Configuration](#configuration) below).
 
 ## Example
 
